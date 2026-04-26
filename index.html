@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Кликер Дмитрия</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Russo+One&family=Nunito:wght@400;600;700;900&display=swap');
+
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --card: #16213e;
+    --accent: #e94560;
+    --gold: #ffd700;
+    --blue: #0f3460;
+    --text: #eaeaea;
+    --muted: #888;
+    --common: #aaaaaa;
+    --rare: #4dabf7;
+    --epic: #cc5de8;
+    --legendary: #ffd43b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    user-select: none;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, #1a0a2e44 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, #0f346044 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 420px; margin: 0 auto; padding: 16px; }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 14px 18px;
+    background: var(--card);
+    border-radius: 18px;
+    border: 1px solid #ffffff10;
+  }
+
+  .dmitriy-avatar {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--accent), #ff8c42);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px #e9456044;
+  }
+
+  .header-info { flex: 1; }
+  .header-name {
+    font-family: 'Russo One', sans-serif;
+    font-size: 16px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .header-phrase {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+    min-height: 16px;
+    transition: opacity 0.3s;
+  }
+
+  /* Coins display */
+  .coins-display {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: var(--card);
+    border-radius: 20px;
+    border: 1px solid #ffffff10;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .coins-display::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(transparent 340deg, #ffd70011 360deg);
+    animation: rotate 4s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes rotate { to { transform: rotate(360deg); } }
+
+  .coins-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+  .coins-value {
+    font-family: 'Russo One', sans-serif;
+    font-size: 42px;
+    color: var(--gold);
+    text-shadow: 0 0 30px #ffd70055;
+    line-height: 1;
+    transition: transform 0.1s;
+  }
+  .coins-value.bump { transform: scale(1.08); }
+
+  .coins-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 12px;
+  }
+  .stat-item { text-align: center; }
+  .stat-val { font-size: 15px; font-weight: 700; color: var(--text); }
+  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Click button */
+  .click-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .click-btn {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    border: none;
+    background: radial-gradient(circle at 35% 35%, #ff6b6b, var(--accent), #c0392b);
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.08s, box-shadow 0.08s;
+    box-shadow: 0 0 40px #e9456066, 0 8px 32px #00000066;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+
+  .click-btn:active {
+    transform: scale(0.92);
+    box-shadow: 0 0 20px #e9456044, 0 4px 16px #00000066;
+  }
+
+  .click-btn-icon { font-size: 52px; pointer-events: none; }
+  .click-btn-label {
+    font-family: 'Russo One', sans-serif;
+    font-size: 12px;
+    color: #fff;
+    letter-spacing: 2px;
+    pointer-events: none;
+    margin-top: 2px;
+  }
+
+  /* Floating +N animation */
+  .float-text {
+    position: absolute;
+    font-family: 'Russo One', sans-serif;
+    font-size: 22px;
+    color: var(--gold);
+    text-shadow: 0 0 10px #ffd700;
+    pointer-events: none;
+    animation: floatUp 0.8s ease-out forwards;
+    z-index: 100;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-80px) scale(1.3); }
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    background: var(--card);
+    color: var(--muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 4px 15px #e9456055;
+  }
+
+  /* Shop */
+  .shop { display: flex; flex-direction: column; gap: 10px; }
+
+  .upgrade-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--card);
+    border-radius: 16px;
+    border: 1px solid #ffffff08;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upgrade-card:active { transform: scale(0.98); }
+  .upgrade-card.affordable { border-color: #ffffff18; }
+  .upgrade-card.affordable:hover { border-color: var(--accent); box-shadow: 0 0 20px #e9456022; }
+  .upgrade-card.bought { opacity: 0.5; cursor: default; }
+  .upgrade-card.cant-afford { opacity: 0.6; cursor: not-allowed; }
+
+  .upgrade-rarity-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+  .rarity-Common .upgrade-rarity-bar { background: var(--common); }
+  .rarity-Rare .upgrade-rarity-bar { background: var(--rare); }
+  .rarity-Epic .upgrade-rarity-bar { background: var(--epic); }
+  .rarity-Legendary .upgrade-rarity-bar { background: var(--legendary); box-shadow: 0 0 10px var(--legendary); }
+
+  .upgrade-icon { font-size: 28px; flex-shrink: 0; }
+  .upgrade-info { flex: 1; min-width: 0; }
+  .upgrade-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .upgrade-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .rarity-Common .upgrade-name { color: var(--common); }
+  .rarity-Rare .upgrade-name { color: var(--rare); }
+  .rarity-Epic .upgrade-name { color: var(--epic); }
+  .rarity-Legendary .upgrade-name { color: var(--legendary); }
+
+  .upgrade-cost {
+    font-family: 'Russo One', sans-serif;
+    font-size: 13px;
+    color: var(--gold);
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .upgrade-cost.bought-label { color: #4caf50; font-size: 11px; }
+
+  /* Stats panel */
+  .stats-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid #ffffff08;
+    text-align: center;
+  }
+  .stat-card-val { font-family: 'Russo One', sans-serif; font-size: 24px; color: var(--accent); }
+  .stat-card-lbl { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  .milestones { margin-top: 10px; }
+  .milestone-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--card);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    border: 1px solid #ffffff08;
+  }
+  .milestone-item.done { border-color: #ffd70033; }
+  .milestone-item .m-icon { font-size: 20px; }
+  .milestone-item .m-text { flex: 1; color: var(--muted); }
+  .milestone-item.done .m-text { color: var(--text); }
+  .milestone-item .m-check { color: #4caf50; font-size: 16px; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1a1a2e;
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px #e9456033;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .section-hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="dmitriy-avatar">🧔</div>
+    <div class="header-info">
+      <div class="header-name">ДМИТРИЙ</div>
+      <div class="header-phrase" id="phrase">Привет! Начнём кликать? 💪</div>
+    </div>
+  </div>
+
+  <!-- Coins -->
+  <div class="coins-display">
+    <div class="coins-label">монеты</div>
+    <div class="coins-value" id="coins">0</div>
+    <div class="coins-stats">
+      <div class="stat-item">
+        <div class="stat-val" id="per-click">1</div>
+        <div class="stat-lbl">за клик</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="auto-click">0</div>
+        <div class="stat-lbl">авто/сек</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="total-clicks">0</div>
+        <div class="stat-lbl">кликов</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Click button -->
+  <div class="click-area" id="click-area">
+    <button class="click-btn" id="click-btn" onclick="handleClick(event)">
+      <span class="click-btn-icon">👆</span>
+      <span class="click-btn-label">КЛИК</span>
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('shop', this)">🛒 Магазин</button>
+    <button class="tab" onclick="switchTab('stats', this)">📊 Статистика</button>
+  </div>
+
+  <!-- Shop -->
+  <div class="shop" id="tab-shop"></div>
+
+  <!-- Stats -->
+  <div class="stats-panel section-hidden" id="tab-stats"></div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ---- STATE ----
+const UPGRADES = [
+  { id: 'auto1', name: 'Кофе для Дмитрия', icon: '☕', desc: '+1 авто/сек', cost: 50,    auto: 1,   multi: 0, rarity: 'Common' },
+  { id: 'multi1',name: 'Мозг Дмитрия',     icon: '🧠', desc: 'x2 за клик',  cost: 200,   auto: 0,   multi: 1, rarity: 'Rare' },
+  { id: 'auto2', name: 'Ноутбук',           icon: '💻', desc: '+5 авто/сек', cost: 300,   auto: 5,   multi: 0, rarity: 'Rare' },
+  { id: 'auto3', name: 'Робот-помощник',    icon: '🤖', desc: '+20 авто/сек',cost: 1000,  auto: 20,  multi: 0, rarity: 'Epic' },
+  { id: 'multi2',name: 'Суперсила',         icon: '⚡', desc: 'x5 за клик',  cost: 2000,  auto: 0,   multi: 4, rarity: 'Epic' },
+  { id: 'auto4', name: 'Завод Дмитрия',     icon: '🏭', desc: '+100 авто/сек',cost:10000, auto: 100, multi: 0, rarity: 'Legendary' },
+  { id: 'multi3',name: 'Корона Дмитрия',    icon: '👑', desc: 'x10 за клик', cost: 15000, auto: 0,   multi: 9, rarity: 'Legendary' },
+];
+
+const PHRASES = [
+  'Так держать! 💪', 'Хорошая работа!', 'Дмитрий доволен! 😎',
+  'Кликай быстрее!', 'Неплохо...', 'Дмитрий одобряет! 👍',
+  'ТЫ МАШИНА! 🔥', 'Дмитрий впечатлён! 🤯'
+];
+
+const MILESTONES = [
+  { coins: 100,   label: '100 монет',    icon: '🥉' },
+  { coins: 1000,  label: '1 000 монет',  icon: '🥈' },
+  { coins: 10000, label: '10 000 монет', icon: '🥇' },
+  { coins: 50000, label: '50 000 монет', icon: '💎' },
+  { coins: 100000,label: '100 000 монет',icon: '👑' },
+];
+
+let state = {
+  coins: 0,
+  perClick: 1,
+  auto: 0,
+  totalClicks: 0,
+  bought: [],
+};
+
+// Load from localStorage
+try {
+  const saved = localStorage.getItem('dmitriy_clicker');
+  if (saved) state = { ...state, ...JSON.parse(saved) };
+} catch(e) {}
+
+function save() {
+  try { localStorage.setItem('dmitriy_clicker', JSON.stringify(state)); } catch(e) {}
+}
+
+// ---- UI UPDATE ----
+function updateUI() {
+  document.getElementById('coins').textContent = formatNum(state.coins);
+  document.getElementById('per-click').textContent = state.perClick;
+  document.getElementById('auto-click').textContent = state.auto;
+  document.getElementById('total-clicks').textContent = formatNum(state.totalClicks);
+}
+
+function formatNum(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return n.toString();
+}
+
+// ---- CLICK ----
+function handleClick(e) {
+  state.coins += state.perClick;
+  state.totalClicks++;
+
+  // Bump animation
+  const el = document.getElementById('coins');
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+  setTimeout(() => el.classList.remove('bump'), 100);
+
+  // Floating text
+  spawnFloat(e, '+' + state.perClick);
+
+  // Random phrase
+  if (state.totalClicks % 10 === 0) {
+    setPhrase(PHRASES[Math.floor(Math.random() * PHRASES.length)]);
+  }
+
+  // Milestone check
+  for (const m of MILESTONES) {
+    if (state.coins >= m.coins && state.coins - state.perClick < m.coins) {
+      showToast(m.icon + ' ' + m.label + ' — Дмитрий в восторге!');
+    }
+  }
+
+  updateUI();
+  renderShop();
+  save();
+
+  // Haptic
+  if (window.Telegram?.WebApp?.HapticFeedback) {
+    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+  }
+}
+
+function spawnFloat(e, text) {
+  const area = document.getElementById('click-area');
+  const rect = area.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = 'float-text';
+  el.textContent = text;
+  const x = (e.clientX || rect.left + rect.width/2) - rect.left - 20;
+  const y = (e.clientY || rect.top + rect.height/2) - rect.top - 20;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  area.style.position = 'relative';
+  area.appendChild(el);
+  setTimeout(() => el.remove(), 800);
+}
+
+function setPhrase(text) {
+  const el = document.getElementById('phrase');
+  el.style.opacity = 0;
+  setTimeout(() => { el.textContent = text; el.style.opacity = 1; }, 150);
+}
+
+// ---- AUTO CLICK ----
+setInterval(() => {
+  if (state.auto > 0) {
+    state.coins += state.auto;
+    updateUI();
+    save();
+  }
+}, 1000);
+
+// ---- SHOP ----
+function renderShop() {
+  const el = document.getElementById('tab-shop');
+  el.innerHTML = '';
+  for (const upg of UPGRADES) {
+    const bought = state.bought.includes(upg.id);
+    const canAfford = state.coins >= upg.cost;
+    const div = document.createElement('div');
+    div.className = `upgrade-card rarity-${upg.rarity} ${bought ? 'bought' : canAfford ? 'affordable' : 'cant-afford'}`;
+    div.innerHTML = `
+      <div class="upgrade-rarity-bar"></div>
+      <div class="upgrade-icon">${upg.icon}</div>
+      <div class="upgrade-info">
+        <div class="upgrade-name">${upg.name}</div>
+        <div class="upgrade-desc">${upg.desc}</div>
+      </div>
+      <div class="upgrade-cost ${bought ? 'bought-label' : ''}">
+        ${bought ? '✅ Куплено' : '💰 ' + formatNum(upg.cost)}
+      </div>
+    `;
+    if (!bought) div.onclick = () => buyUpgrade(upg.id);
+    el.appendChild(div);
+  }
+}
+
+function buyUpgrade(id) {
+  const upg = UPGRADES.find(u => u.id === id);
+  if (!upg || state.bought.includes(id)) return;
+  if (state.coins < upg.cost) {
+    showToast('😢 Не хватает монет!');
+    return;
+  }
+  state.coins -= upg.cost;
+  state.bought.push(id);
+  state.auto += upg.auto;
+  state.perClick += upg.multi;
+  setPhrase('Дмитрий одобряет! 👍');
+  showToast('✅ ' + upg.name + ' куплено!');
+  updateUI();
+  renderShop();
+  save();
+
+  if (window.Telegram?.WebApp?.HapticFeedback) {
+    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+  }
+}
+
+// ---- STATS ----
+function renderStats() {
+  const el = document.getElementById('tab-stats');
+  const reached = MILESTONES.filter(m => state.coins >= m.coins);
+  el.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-card-val">${formatNum(state.coins)}</div>
+      <div class="stat-card-lbl">Монеты</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-val">${formatNum(state.totalClicks)}</div>
+      <div class="stat-card-lbl">Кликов</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-val">${state.perClick}</div>
+      <div class="stat-card-lbl">За клик</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-val">${state.auto}</div>
+      <div class="stat-card-lbl">Авто/сек</div>
+    </div>
+    <div class="stat-card" style="grid-column: 1/-1">
+      <div class="stat-card-val">${state.bought.length} / ${UPGRADES.length}</div>
+      <div class="stat-card-lbl">Улучшений куплено</div>
+    </div>
+  `;
+
+  const milDiv = document.createElement('div');
+  milDiv.className = 'milestones';
+  milDiv.style.gridColumn = '1/-1';
+  for (const m of MILESTONES) {
+    const done = state.coins >= m.coins;
+    milDiv.innerHTML += `
+      <div class="milestone-item ${done ? 'done' : ''}">
+        <span class="m-icon">${m.icon}</span>
+        <span class="m-text">${m.label}</span>
+        ${done ? '<span class="m-check">✓</span>' : ''}
+      </div>
+    `;
+  }
+  el.appendChild(milDiv);
+}
+
+// ---- TABS ----
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-shop').classList.toggle('section-hidden', name !== 'shop');
+  document.getElementById('tab-stats').classList.toggle('section-hidden', name !== 'stats');
+  if (name === 'stats') renderStats();
+}
+
+// ---- TOAST ----
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ---- TELEGRAM INIT ----
+if (window.Telegram?.WebApp) {
+  window.Telegram.WebApp.ready();
+  window.Telegram.WebApp.expand();
+}
+
+// ---- INIT ----
+updateUI();
+renderShop();
+</script>
+</body>
+</html>
