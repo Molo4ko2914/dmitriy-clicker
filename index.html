@@ -311,12 +311,9 @@ function formatNum(n) {
   if (n >= 1000) return (n/1000).toFixed(1)+'K';
   return Math.floor(n).toString();
 }
-
-function handleClick(e) {
-  let lastClickTime = 0;
+let lastClickTime = 0;
 let clickIntervals = [];
 let banned = false;
-
 function handleClick(e) {
   if (banned) {
     showToast('🚫 Дмитрий тебя забанил за читерство!');
