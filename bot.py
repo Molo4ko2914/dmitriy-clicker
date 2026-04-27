@@ -816,7 +816,11 @@ def handle_noop(call):
 
 print("Бот запускается...")
 
-ADMIN_ID = 1995678658
+import urllib.request
+import json
+
+SUPABASE_URL = "https://vaxqqmlzynbfeuyhptlg.supabase.co"
+SUPABASE_KEY = "sb_publishable_pFEOojIDsQgUs-rAqOwrbQ_mDuYhBAc"
 
 @bot.message_handler(commands=['reset'])
 def reset_user(message):
@@ -830,12 +834,20 @@ def reset_user(message):
         return
     
     user_id = args[1]
-    data = load_data()
-    if user_id in data:
-        data[user_id] = {"coins": 0, "per_click": 1, "auto": 0, "upgrades": []}
-        save_data(data)
-        bot.reply_to(message, f"✅ Прогресс {user_id} сброшен!")
-    else:
-        bot.reply_to(message, "❌ Игрок не найден")
+    
+    import urllib.request
+    req = urllib.request.Request(
+        f"{SUPABASE_URL}/rest/v1/scores?user_id=eq.{user_id}",
+        data=json.dumps({"coins": 0, "total_clicks": 0}).encode(),
+        headers={
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+        },
+        method="PATCH"
+    )
+    urllib.request.urlopen(req)
+    bot.reply_to(message, f"✅ Прогресс {user_id} сброшен в Supabase!")
 
 bot.polling(none_stop=True)
