@@ -821,7 +821,7 @@ ADMIN_ID = 1995678658
 @bot.message_handler(commands=['reset'])
 def reset_user(message):
     if message.from_user.id != ADMIN_ID:
-        bot.reply_to(message, "❌ Нет доступа")
+        bot.reply_to(message, f"Твой ID: {message.from_user.id}, нужен: {ADMIN_ID}")
         return
 
     args = message.text.split()
