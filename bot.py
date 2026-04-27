@@ -799,13 +799,7 @@ def handle_back(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data == "noop")
-
-
-
 def handle_noop(call):
-
-
-
     bot.answer_callback_query(call.id, "Уже куплено!")
 
 
