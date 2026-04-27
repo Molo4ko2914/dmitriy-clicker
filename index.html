@@ -242,7 +242,39 @@ if (window.Telegram?.WebApp) {
   tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
 }
 
+// Загружаем из localStorage как запасной вариант
 try { const s = localStorage.getItem('dmitriy_clicker'); if (s) state = {...state, ...JSON.parse(s)}; } catch(e) {}
+
+// Загружаем из Supabase — данные оттуда имеют приоритет (чтобы /reset и /addcoins работали)
+async function loadFromSupabase() {
+  if (!tgUser) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/scores?user_id=eq.${tgUser.id}&select=coins,total_clicks`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await res.json();
+    if (data && data.length > 0) {
+      const row = data[0];
+      // Берём максимум между Supabase и localStorage, чтобы не откатить прогресс при десинхроне
+      // НО если Supabase меньше — значит админ сделал /reset, слушаемся Supabase
+      const localCoins = state.coins;
+      const supaCoins = row.coins ?? 0;
+      const supaClicks = row.total_clicks ?? 0;
+      // Если Supabase сильно меньше локального (>50% разница) — админ сделал /reset, слушаемся Supabase
+      if (supaCoins < localCoins * 0.5 && localCoins > 100) {
+        state.coins = supaCoins;
+        state.totalClicks = supaClicks;
+      } else {
+        // Иначе берём максимум — защита от потери прогресса + /addcoins подтягивается автоматически
+        state.coins = Math.max(localCoins, supaCoins);
+        state.totalClicks = Math.max(state.totalClicks, supaClicks);
+      }
+      try { localStorage.setItem('dmitriy_clicker', JSON.stringify(state)); } catch(e) {}
+      updateUI();
+    }
+  } catch(e) {}
+}
+loadFromSupabase();
 
 function save() {
   try { localStorage.setItem('dmitriy_clicker', JSON.stringify(state)); } catch(e) {}
