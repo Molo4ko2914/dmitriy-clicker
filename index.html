@@ -192,12 +192,104 @@
   .admin-user-name { flex: 1; font-size: 13px; font-weight: 700; }
   .admin-user-coins { font-size: 12px; color: var(--gold); }
   .admin-mini-btn { padding: 4px 8px; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; font-family: 'Nunito', sans-serif; }
+
+  /* EASTER EGG */
+  .easter-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .easter-overlay.show { opacity: 1; pointer-events: all; }
+  .easter-box {
+    background: var(--card); border-radius: 24px; padding: 28px 24px;
+    border: 2px solid var(--accent); text-align: center; max-width: 320px; width: 90%;
+    transform: scale(0.7); transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 0 60px #e9456066;
+  }
+  .easter-overlay.show .easter-box { transform: scale(1); }
+  .easter-emoji { font-size: 80px; display: block; animation: wobble 0.6s ease-in-out infinite alternate; }
+  @keyframes wobble {
+    0% { transform: rotate(-8deg) scale(1); }
+    100% { transform: rotate(8deg) scale(1.1); }
+  }
+  .easter-title {
+    font-family: 'Russo One', sans-serif; font-size: 20px;
+    color: var(--accent); margin: 14px 0 8px; letter-spacing: 1px;
+    text-shadow: 0 0 20px #e9456088;
+  }
+  .easter-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .easter-close {
+    margin-top: 20px; padding: 10px 28px; background: var(--accent);
+    border: none; border-radius: 30px; color: #fff;
+    font-family: 'Russo One', sans-serif; font-size: 13px;
+    cursor: pointer; letter-spacing: 1px;
+    box-shadow: 0 4px 20px #e9456055; transition: transform 0.1s;
+  }
+  .easter-close:active { transform: scale(0.95); }
+  .dmitriy-avatar { cursor: pointer; transition: transform 0.15s; }
+  .dmitriy-avatar:active { transform: scale(0.88); }
+
+  /* ACHIEVEMENTS */
+  .achieve-panel { display: flex; flex-direction: column; gap: 10px; }
+  .achieve-header {
+    text-align: center; padding: 14px;
+    background: var(--card); border-radius: 18px; border: 1px solid #ffd70022;
+    margin-bottom: 4px;
+  }
+  .achieve-header-title { font-family: 'Russo One', sans-serif; font-size: 16px; color: var(--gold); letter-spacing: 1px; }
+  .achieve-header-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .achieve-progress-bar-wrap { background: #0f0f1a; border-radius: 20px; height: 6px; margin: 8px 0 0; overflow: hidden; }
+  .achieve-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 20px; transition: width 0.5s; }
+
+  .ach-card {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    background: var(--card); border-radius: 16px; border: 1px solid #ffffff08;
+    transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .ach-card.unlocked { border-color: #ffd70033; background: linear-gradient(135deg, #16213e, #1a1a00); }
+  .ach-card.locked { opacity: 0.5; filter: grayscale(0.6); }
+  .ach-card.secret.locked { opacity: 0.35; }
+  .ach-card.unlocked::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 60%, #ffd70008);
+    pointer-events: none;
+  }
+  .ach-icon { font-size: 32px; flex-shrink: 0; min-width: 40px; text-align: center; }
+  .ach-info { flex: 1; min-width: 0; }
+  .ach-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .ach-card.unlocked .ach-name { color: var(--gold); }
+  .ach-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .ach-stars { font-size: 16px; letter-spacing: 1px; flex-shrink: 0; }
+  .ach-unlocked-badge {
+    position: absolute; top: 8px; right: 8px;
+    font-size: 10px; font-weight: 700; color: #2ecc71;
+    background: #2ecc7122; border-radius: 6px; padding: 2px 6px;
+  }
+
+  /* ACHIEVEMENT POPUP */
+  .ach-popup {
+    position: fixed; top: 20px; left: 50%;
+    transform: translateX(-50%) translateY(-120px);
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 2px solid var(--gold); border-radius: 20px;
+    padding: 14px 20px; z-index: 9998; min-width: 260px; max-width: 340px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 8px 40px #ffd70044; transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .ach-popup.show { transform: translateX(-50%) translateY(0); }
+  .ach-popup-icon { font-size: 36px; }
+  .ach-popup-info { flex: 1; }
+  .ach-popup-label { font-size: 10px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+  .ach-popup-name { font-family: 'Russo One', sans-serif; font-size: 15px; color: var(--text); margin-top: 2px; }
+  .ach-popup-stars { font-size: 18px; margin-top: 2px; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
-    <div class="dmitriy-avatar">🧔</div>
+    <div class="dmitriy-avatar" onclick="easterEgg()" id="dmitriy-avatar">🧔</div>
     <div class="header-info">
       <div class="header-name">ДМИТРИЙ</div>
       <div class="header-phrase" id="phrase">Привет! Начнём кликать? 💪</div>
@@ -223,18 +315,40 @@
 
   <div class="tabs" id="tabs-row">
     <button class="tab active" onclick="switchTab('shop', this)">🛒 Магазин</button>
-    <button class="tab" onclick="switchTab('stats', this)">📊 Статистика</button>
+    <button class="tab" onclick="switchTab('stats', this)">📊 Статы</button>
+    <button class="tab" onclick="switchTab('achieve', this)">🏅 Ачивки</button>
     <button class="tab" onclick="switchTab('top', this)">🏆 Топ</button>
     <button class="tab admin-tab section-hidden" id="admin-tab-btn" onclick="switchTab('admin', this)">🛠 Админ</button>
   </div>
 
   <div class="shop" id="tab-shop"></div>
   <div class="stats-panel section-hidden" id="tab-stats"></div>
+  <div class="section-hidden" id="tab-achieve" style="display:none"></div>
   <div class="leaderboard section-hidden" id="tab-top"></div>
   <div class="section-hidden" id="tab-admin"></div>
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- ACHIEVEMENT POPUP -->
+<div class="ach-popup" id="ach-popup">
+  <div class="ach-popup-icon" id="ach-popup-icon">🏅</div>
+  <div class="ach-popup-info">
+    <div class="ach-popup-label">🎉 Достижение разблокировано!</div>
+    <div class="ach-popup-name" id="ach-popup-name"></div>
+    <div class="ach-popup-stars" id="ach-popup-stars"></div>
+  </div>
+</div>
+
+<!-- EASTER EGG MODAL -->
+<div class="easter-overlay" id="easter-overlay" onclick="closeEaster(event)">
+  <div class="easter-box" id="easter-box">
+    <span class="easter-emoji" id="easter-emoji">🧔</span>
+    <div class="easter-title" id="easter-title">ТЫ НАШЁЛ ДМИТРИЯ!</div>
+    <div class="easter-text" id="easter-text"></div>
+    <button class="easter-close" onclick="closeEasterBtn()">ОКЕЙ, ДМИТРИЙ 👍</button>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL = 'https://vaxqqmlzynbfeuyhptlg.supabase.co';
@@ -252,6 +366,107 @@ const UPGRADES = [
 ];
 
 const PHRASES = ['Так держать! 💪','Хорошая работа!','Дмитрий доволен! 😎','Кликай быстрее!','Неплохо...','Дмитрий одобряет! 👍','ТЫ МАШИНА! 🔥','Дмитрий впечатлён! 🤯'];
+
+// ===== ACHIEVEMENTS =====
+const ACHIEVEMENTS = [
+  // КЛИКИ
+  { id: 'clicks_10',     icon: '👆', name: 'Первый шаг',        desc: 'Сделай 10 кликов',           stars: 1, check: s => s.totalClicks >= 10 },
+  { id: 'clicks_100',    icon: '✌️', name: 'Разогрелся',         desc: 'Сделай 100 кликов',          stars: 2, check: s => s.totalClicks >= 100 },
+  { id: 'clicks_1000',   icon: '🔥', name: 'Кликомания',         desc: 'Сделай 1 000 кликов',        stars: 3, check: s => s.totalClicks >= 1000 },
+  { id: 'clicks_10000',  icon: '⚡', name: 'Нереальный палец',   desc: 'Сделай 10 000 кликов',       stars: 4, check: s => s.totalClicks >= 10000 },
+  { id: 'clicks_100000', icon: '🌋', name: 'БОГ КЛИКА',          desc: 'Сделай 100 000 кликов',      stars: 5, check: s => s.totalClicks >= 100000 },
+
+  // МОНЕТЫ
+  { id: 'coins_100',     icon: '💰', name: 'Первые монеты',      desc: 'Накопи 100 монет',           stars: 1, check: s => s.coins >= 100 },
+  { id: 'coins_1000',    icon: '💵', name: 'Мелкий богач',       desc: 'Накопи 1 000 монет',         stars: 2, check: s => s.coins >= 1000 },
+  { id: 'coins_10000',   icon: '💎', name: 'Инвестор Дмитрия',   desc: 'Накопи 10 000 монет',        stars: 3, check: s => s.coins >= 10000 },
+  { id: 'coins_100000',  icon: '🏦', name: 'Миллионер почти',    desc: 'Накопи 100 000 монет',       stars: 4, check: s => s.coins >= 100000 },
+  { id: 'coins_1000000', icon: '👸', name: 'ДМИТРИЙ БОГАТ',      desc: 'Накопи 1 000 000 монет',     stars: 5, check: s => s.coins >= 1000000 },
+
+  // УЛУЧШЕНИЯ
+  { id: 'upg_first',     icon: '🛒', name: 'Первая покупка',     desc: 'Купи первое улучшение',      stars: 1, check: s => s.bought.length >= 1 },
+  { id: 'upg_half',      icon: '🧩', name: 'Коллекционер',       desc: 'Купи половину улучшений',    stars: 3, check: s => s.bought.length >= Math.ceil(UPGRADES.length/2) },
+  { id: 'upg_all',       icon: '🎖️', name: 'Всё своё',           desc: 'Купи все улучшения',         stars: 5, check: s => s.bought.length >= UPGRADES.length },
+
+  // АВТО
+  { id: 'auto_10',       icon: '🤖', name: 'Пассивный доход',    desc: 'Достигни 10 авто/сек',       stars: 2, check: s => s.auto >= 10 },
+  { id: 'auto_100',      icon: '🏭', name: 'Завод работает',     desc: 'Достигни 100 авто/сек',      stars: 4, check: s => s.auto >= 100 },
+
+  // ПАСХАЛКИ (скрытые — секретные)
+  { id: 'easter_found',  icon: '🧔', name: 'Нашёл Дмитрия',      desc: 'Нажми на аватар Дмитрия',   stars: 3, secret: true, check: s => s.easterFound >= 1 },
+  { id: 'easter_5',      icon: '👑', name: 'Упрямец',            desc: '???',                        stars: 5, secret: true, check: s => s.easterFound >= 5 },
+  { id: 'easter_title',  icon: '🏷️', name: 'Читатель',           desc: '???',                        stars: 2, secret: true, check: s => s.titleClicked },
+];
+
+let achPopupTimer = null;
+function showAchPopup(ach) {
+  const el = document.getElementById('ach-popup');
+  document.getElementById('ach-popup-icon').textContent = ach.icon;
+  document.getElementById('ach-popup-name').textContent = ach.name;
+  document.getElementById('ach-popup-stars').textContent = '⭐'.repeat(ach.stars) + '☆'.repeat(5 - ach.stars);
+  el.classList.add('show');
+  clearTimeout(achPopupTimer);
+  achPopupTimer = setTimeout(() => el.classList.remove('show'), 3500);
+  if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+}
+
+function checkAchievements() {
+  const unlocked = state.achievements || [];
+  let newUnlock = null;
+  for (const ach of ACHIEVEMENTS) {
+    if (!unlocked.includes(ach.id) && ach.check(state)) {
+      unlocked.push(ach.id);
+      newUnlock = ach;
+    }
+  }
+  state.achievements = unlocked;
+  if (newUnlock) {
+    showAchPopup(newUnlock);
+    // Показываем только одно за раз — остальные в очереди
+    if (unlocked.length > 1) save();
+  }
+}
+
+function starsHtml(count, filled) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) s += i <= filled ? '⭐' : '☆';
+  return s;
+}
+
+function renderAchievements() {
+  const el = document.getElementById('tab-achieve');
+  const unlocked = state.achievements || [];
+  const total = ACHIEVEMENTS.length;
+  const got = unlocked.length;
+  const totalStars = ACHIEVEMENTS.reduce((a,b) => a + b.stars, 0);
+  const earnedStars = ACHIEVEMENTS.filter(a => unlocked.includes(a.id)).reduce((a,b) => a + b.stars, 0);
+
+  let cards = '';
+  for (const ach of ACHIEVEMENTS) {
+    const isUnlocked = unlocked.includes(ach.id);
+    const isSecret = ach.secret && !isUnlocked;
+    cards += `<div class="ach-card ${isUnlocked ? 'unlocked' : 'locked'} ${ach.secret ? 'secret' : ''}">
+      <div class="ach-icon">${isSecret ? '❓' : ach.icon}</div>
+      <div class="ach-info">
+        <div class="ach-name">${isSecret ? '???' : ach.name}</div>
+        <div class="ach-desc">${isSecret ? 'Секретное достижение' : ach.desc}</div>
+      </div>
+      <div class="ach-stars">${starsHtml(5, ach.stars)}</div>
+      ${isUnlocked ? '<div class="ach-unlocked-badge">✓ Получено</div>' : ''}
+    </div>`;
+  }
+
+  el.innerHTML = `<div class="achieve-panel">
+    <div class="achieve-header">
+      <div class="achieve-header-title">🏅 ДОСТИЖЕНИЯ</div>
+      <div class="achieve-header-sub">${got}/${total} разблокировано · ${earnedStars}/${totalStars} ⭐</div>
+      <div class="achieve-progress-bar-wrap">
+        <div class="achieve-progress-bar" style="width:${Math.round(got/total*100)}%"></div>
+      </div>
+    </div>
+    ${cards}
+  </div>`;
+}
 
 let state = { coins: 0, perClick: 1, auto: 0, totalClicks: 0, bought: [] };
 let tgUser = null;
@@ -646,7 +861,41 @@ async function adminResetManual() {
   await adminReset(uid, 'ID:'+uid);
 }
 
-let toastTimer;
+let easterClickCount = 0;
+const EASTER_STAGES = [
+  { emoji: '😳', title: 'ЧТО ТЫ ДЕЛАЕШЬ?!', text: 'Дмитрий не ожидал, что ты нажмёшь сюда. Это секретная кнопка.' },
+  { emoji: '😤', title: 'ОПЯТЬ ТЫ?!', text: 'Дмитрий просил больше не нажимать. Но ты снова тут.' },
+  { emoji: '🤯', title: 'ДА ТЫ СЕРЬЁЗНО?!', text: 'Три раза. Три. Дмитрий считает и запоминает.' },
+  { emoji: '😡', title: 'ХВАТИТ!!!', text: 'Дмитрий официально злится. Иди кликай кнопку, там монеты.' },
+  { emoji: '🥲', title: 'Ладно...', text: 'Дмитрий сдался. Ты победил. Лови +100 монет за настойчивость 🏆' },
+  { emoji: '👑', title: 'ЛЕГЕНДА!', text: 'Ты нашёл все пасхалки Дмитрия. Уважение.' },
+];
+
+function easterEgg() {
+  const stage = EASTER_STAGES[Math.min(easterClickCount, EASTER_STAGES.length - 1)];
+  document.getElementById('easter-emoji').textContent = stage.emoji;
+  document.getElementById('easter-title').textContent = stage.title;
+  document.getElementById('easter-text').textContent = stage.text;
+
+  // На 5-м нажатии — выдаём монеты
+  if (easterClickCount === 4) {
+    state.coins += 100;
+    updateUI();
+    save();
+  }
+
+  easterClickCount++;
+  document.getElementById('easter-overlay').classList.add('show');
+  if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+}
+
+function closeEasterBtn() {
+  document.getElementById('easter-overlay').classList.remove('show');
+}
+
+function closeEaster(e) {
+  if (e.target === document.getElementById('easter-overlay')) closeEasterBtn();
+}
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
