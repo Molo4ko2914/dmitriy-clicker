@@ -465,14 +465,24 @@ function renderStats() {
 const ADMIN_ID = 1995678658;
 
 function checkAdmin() {
-  if (tgUser && tgUser.id === ADMIN_ID) {
+  // Приводим к числу на случай если tgUser.id строка
+  const myId = tgUser ? Number(tgUser.id) : null;
+  console.log('[Admin check] tgUser:', tgUser, 'myId:', myId, 'ADMIN_ID:', ADMIN_ID);
+  if (myId === ADMIN_ID) {
     const btn = document.getElementById('admin-tab-btn');
     btn.classList.remove('section-hidden');
     btn.style.background = 'linear-gradient(135deg, #e94560, #c0392b)';
     btn.style.color = '#fff';
     btn.style.borderColor = '#e9456066';
+    console.log('[Admin] Кнопка показана!');
+  } else {
+    console.log('[Admin] Не админ. myId=' + myId + ' vs ADMIN_ID=' + ADMIN_ID);
   }
 }
+
+// Запасной вариант: если Telegram не загрузился за 500мс — пробуем снова через 2с
+setTimeout(checkAdmin, 500);
+setTimeout(checkAdmin, 2000);
 
 function switchTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -598,7 +608,6 @@ function showToast(msg) {
 }
 
 updateUI(); renderShop(); syncToSupabase();
-setTimeout(checkAdmin, 500);
 </script>
 </body>
 </html>
