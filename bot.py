@@ -824,7 +824,7 @@ SUPABASE_KEY = "sb_publishable_pFEOojIDsQgUs-rAqOwrbQ_mDuYhBAc"
 
 @bot.message_handler(commands=['reset'])
 def reset_user(message):
-    if message.from_user.id != ADMIN_ID:
+    if message.from_user.id != ADMIN_ID: 1995678658
         bot.reply_to(message, "❌ Нет доступа")
         return
     
