@@ -269,7 +269,7 @@ try { const s = localStorage.getItem('dmitriy_clicker'); if (s) state = {...stat
 async function loadFromSupabase() {
   if (!tgUser) return;
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/scores?user_id=eq.${tgUser.id}&select=coins,total_clicks`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/scores?user_id=eq.${tgUser.id}&select=coins,total_clicks,bought`, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     const data = await res.json();
@@ -288,6 +288,23 @@ async function loadFromSupabase() {
         // Иначе берём максимум — защита от потери прогресса + /addcoins подтягивается автоматически
         state.coins = Math.max(localCoins, supaCoins);
         state.totalClicks = Math.max(state.totalClicks, supaClicks);
+      }
+      // Восстанавливаем улучшения из Supabase (если там меньше — значит админ сбросил)
+      if (row.bought !== null && row.bought !== undefined) {
+        try {
+          const supaBought = typeof row.bought === 'string' ? JSON.parse(row.bought) : (row.bought || []);
+          // Если Supabase сбросил улучшения (пустой массив) — слушаемся
+          if (supaBought.length < state.bought.length && state.bought.length > 0 && localCoins > 100) {
+            state.bought = supaBought;
+            // Пересчитываем бонусы
+            state.perClick = 1;
+            state.auto = 0;
+            supaBought.forEach(id => {
+              const upg = UPGRADES.find(u => u.id === id);
+              if (upg) { state.auto += upg.auto; state.perClick += upg.multi; }
+            });
+          }
+        } catch(e) {}
       }
       try { localStorage.setItem('dmitriy_clicker', JSON.stringify(state)); } catch(e) {}
       updateUI();
@@ -316,7 +333,8 @@ async function syncToSupabase() {
         user_id: tgUser.id,
         username: tgUser.username || tgUser.first_name || 'Игрок',
         coins: state.coins,
-        total_clicks: state.totalClicks
+        total_clicks: state.totalClicks,
+        bought: JSON.stringify(state.bought)
       })
     });
   } catch(e) {}
@@ -516,6 +534,7 @@ async function renderAdmin() {
           </div>
           <div class="admin-user-coins">💰 ${formatNum(u.coins)}</div>
           <button class="admin-mini-btn" style="background:#e94560;color:#fff" onclick="adminReset('${u.user_id}','${u.username||'Игрок'}')">🗑</button>
+          <button class="admin-mini-btn" style="background:#cc5de8;color:#fff" onclick="adminResetUpgrades('${u.user_id}','${u.username||'Игрок'}')">🔧</button>
           <button class="admin-mini-btn" style="background:#2ecc71;color:#fff" onclick="adminAddCoins('${u.user_id}','${u.username||'Игрок'}')">+💰</button>
         </div>`;
       });
@@ -536,15 +555,23 @@ async function renderAdmin() {
       </div>
 
       <div class="admin-card">
-        <div class="admin-card-title">🗑 Сбросить игрока</div>
+        <div class="admin-card-title">🔧 Сбросить улучшения игрока</div>
         <div class="admin-input-row">
-          <input class="admin-input" id="admin-reset-uid" placeholder="Telegram ID игрока">
+          <input class="admin-input" id="admin-upgrades-uid" placeholder="Telegram ID игрока">
         </div>
-        <button class="admin-btn admin-btn-red" style="width:100%" onclick="adminResetManual()">🔴 Обнулить счёт</button>
+        <button class="admin-btn" style="width:100%;background:#cc5de8;color:#fff" onclick="adminResetUpgradesManual()">🔧 Сбросить только улучшения</button>
       </div>
 
       <div class="admin-card">
-        <div class="admin-card-title">👥 Все игроки (${users.length})</div>
+        <div class="admin-card-title">🗑 Сбросить игрока полностью</div>
+        <div class="admin-input-row">
+          <input class="admin-input" id="admin-reset-uid" placeholder="Telegram ID игрока">
+        </div>
+        <button class="admin-btn admin-btn-red" style="width:100%" onclick="adminResetManual()">🔴 Обнулить счёт + улучшения</button>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-title">👥 Все игроки (${users.length}) &nbsp;<span style="font-size:10px;color:var(--muted)">🗑 полный сброс &nbsp; 🔧 только улучшения &nbsp; +💰 монеты</span></div>
         <div class="admin-users-list">${usersHtml}</div>
       </div>
 
@@ -556,16 +583,35 @@ async function renderAdmin() {
 }
 
 async function adminReset(userId, username) {
-  if (!confirm('Сбросить ' + username + '?')) return;
+  if (!confirm('Полный сброс ' + username + '? (монеты + улучшения)')) return;
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/scores?user_id=eq.${userId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
-      body: JSON.stringify({ coins: 0, total_clicks: 0 })
+      body: JSON.stringify({ coins: 0, total_clicks: 0, bought: JSON.stringify([]) })
     });
-    showToast('✅ ' + username + ' сброшен!');
+    showToast('✅ ' + username + ' полностью сброшен!');
     renderAdmin();
   } catch(e) { showToast('❌ Ошибка!'); }
+}
+
+async function adminResetUpgrades(userId, username) {
+  if (!confirm('Сбросить улучшения ' + username + '? (монеты сохранятся)')) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/scores?user_id=eq.${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ bought: JSON.stringify([]) })
+    });
+    showToast('✅ Улучшения ' + username + ' сброшены!');
+    renderAdmin();
+  } catch(e) { showToast('❌ Ошибка!'); }
+}
+
+async function adminResetUpgradesManual() {
+  const uid = document.getElementById('admin-upgrades-uid').value;
+  if (!uid) { showToast('❌ Введи ID!'); return; }
+  await adminResetUpgrades(uid, 'ID:'+uid);
 }
 
 async function adminAddCoins(userId, username) {
