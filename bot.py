@@ -205,634 +205,157 @@ def get_user(data, user_id):
 def make_main_keyboard(user):
 
 
+diff --git a/bot.py b/bot.py
+index 2e71c4702ff6299b05e9076676f38262b33e0004..d977564621e669c7d210c6c42f960749556ce6c7 100644
+--- a/bot.py
++++ b/bot.py
+@@ -208,50 +208,64 @@ def make_main_keyboard(user):
+ 
+     kb = InlineKeyboardMarkup()
+ 
+ 
+ 
+     kb.add(InlineKeyboardButton(f"👆 Кликнуть (+{user['per_click']})", callback_data="click"))
+ 
+ 
+ 
+     kb.add(InlineKeyboardButton("🛒 Улучшения", callback_data="shop"))
+ 
+ 
+ 
+     kb.add(InlineKeyboardButton("📊 Статистика", callback_data="stats"))
+ 
+ 
+ 
+     return kb
+ 
+ 
+ 
+ 
+ 
+ 
+ 
++def admin_keyboard():
++
++    kb = InlineKeyboardMarkup()
++
++    kb.add(InlineKeyboardButton("♻️ Сбросить игрока", callback_data="admin_reset"))
++
++    kb.add(InlineKeyboardButton("💰 Выдать монеты", callback_data="admin_add"))
++
++    kb.add(InlineKeyboardButton("📊 Статистика игрока", callback_data="admin_stats"))
++
++    return kb
++
++
++
+ def get_status_text(user):
+ 
+ 
+ 
+     phrase = DMITRIY_PHRASES["click"][user["coins"] // 100 % len(DMITRIY_PHRASES["click"])]
+ 
+ 
+ 
+     return (
+ 
+ 
+ 
+         f"🧔 Дмитрий говорит: *{phrase}*\n\n"
+ 
+ 
+ 
+         f"💰 Монеты: *{user['coins']}*\n"
+ 
+ 
+ 
+         f"👆 За клик: *{user['per_click']}*\n"
+ 
+ 
+ 
+         f"⚙️ Авто-клик: *{user['auto']}/сек*"
+@@ -786,50 +800,80 @@ def handle_back(call):
+ 
+ 
+ 
+     except:
+ 
+ 
+ 
+         pass
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ @bot.callback_query_handler(func=lambda call: call.data == "noop")
+ def handle_noop(call):
+     bot.answer_callback_query(call.id, "Уже куплено!")
+ 
+ 
+ 
+ 
+ 
+ 
+ 
++@bot.message_handler(commands=['admin'])
++def admin_panel(message):
++    if message.from_user.id != ADMIN_ID:
++        return
++
++    bot.send_message(
++        message.chat.id,
++        "🛠 Админ-панель:",
++        reply_markup=admin_keyboard()
++    )
++
++
++@bot.callback_query_handler(func=lambda call: call.data.startswith("admin_"))
++def admin_menu(call):
++    if call.from_user.id != ADMIN_ID:
++        bot.answer_callback_query(call.id, "Нет доступа")
++        return
++
++    if call.data == "admin_reset":
++        bot.send_message(call.message.chat.id, "Введите: /reset USER_ID")
++
++    if call.data == "admin_add":
++        bot.send_message(call.message.chat.id, "Введите: /addcoins USER_ID AMOUNT")
++
++    if call.data == "admin_stats":
++        bot.send_message(call.message.chat.id, "Введите: /stats USER_ID")
++
++    bot.answer_callback_query(call.id)
++
++
+ SUPABASE_URL = "https://vaxqqmlzynbfeuyhptlg.supabase.co"
+ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheHFxbWx6eW5iZmV1eWhwdGxnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzIxODk1NywiZXhwIjoyMDkyNzk0OTU3fQ.0q-KZliAIH0pkm2qqdSFZEPdec3VkBEsifJ9NRNNY00"
+ ADMIN_ID = 1995678658
+ 
+ @bot.message_handler(commands=['reset'])
+ def reset_user(message):
+     if message.from_user.id != ADMIN_ID:
+         bot.reply_to(message, f"Твой ID: {message.from_user.id}, нужен: {ADMIN_ID}")
+         return
+ 
+     args = message.text.split(maxsplit=1)
+ 
+     if len(args) < 2:
+         bot.reply_to(message, "Использование: /reset USER_ID")
+         return
+ 
+     user_id = args[1].split('@')[0].strip()
+ 
+     try:
+         user_id = int(user_id)
+     except:
+         bot.reply_to(message, "❌ USER_ID должен быть числом")
+         return
+ 
+     req = urllib.request.Request(
 
-    kb = InlineKeyboardMarkup()
-
-
-
-    kb.add(InlineKeyboardButton(f"👆 Кликнуть (+{user['per_click']})", callback_data="click"))
-
-
-
-    kb.add(InlineKeyboardButton("🛒 Улучшения", callback_data="shop"))
-
-
-
-    kb.add(InlineKeyboardButton("📊 Статистика", callback_data="stats"))
-
-
-
-    return kb
-
-
-
-
-
-
-
-def get_status_text(user):
-
-
-
-    phrase = DMITRIY_PHRASES["click"][user["coins"] // 100 % len(DMITRIY_PHRASES["click"])]
-
-
-
-    return (
-
-
-
-        f"🧔 Дмитрий говорит: *{phrase}*\n\n"
-
-
-
-        f"💰 Монеты: *{user['coins']}*\n"
-
-
-
-        f"👆 За клик: *{user['per_click']}*\n"
-
-
-
-        f"⚙️ Авто-клик: *{user['auto']}/сек*"
-
-
-
-    )
-
-
-
-
-
-
-
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
-
-
-
-
-
-
-
-@bot.message_handler(commands=['start'])
-
-
-
-def start(message):
-
-
-
-    kb = InlineKeyboardMarkup()
-
-
-
-    kb.add(InlineKeyboardButton(
-
-
-
-        "🎮 Играть",
-
-
-
-        web_app=WebAppInfo(url="https://molo4ko2914.github.io/dmitriy-clicker")
-
-
-
-    ))
-
-
-
-    bot.send_message(
-
-
-
-        message.chat.id,
-
-
-
-        "🧔 *Дмитрий говорит:* Нажми кнопку и начнём кликать! 💪",
-
-
-
-        parse_mode="Markdown",
-
-
-
-        reply_markup=kb
-
-
-
-    )
-
-
-
-
-
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "click")
-
-
-
-def handle_click(call):
-
-
-
-    bot.answer_callback_query(call.id)
-
-
-
-    data = load_data()
-
-
-
-    user = get_user(data, call.from_user.id)
-
-
-
-    user["coins"] += user["per_click"]
-
-
-
-
-
-
-
-    extra = ""
-
-
-
-    for threshold, key in [(10000, "milestone_10000"), (1000, "milestone_1000"), (100, "milestone_100")]:
-
-
-
-        if user["coins"] >= threshold and user["coins"] - user["per_click"] < threshold:
-
-
-
-            extra = f"\n\n🎉 {DMITRIY_PHRASES[key]}"
-
-
-
-
-
-
-
-    save_data(data)
-
-
-
-    try:
-
-
-
-        bot.edit_message_text(
-
-
-
-            get_status_text(user) + extra,
-
-
-
-            call.message.chat.id,
-
-
-
-            call.message.message_id,
-
-
-
-            parse_mode="Markdown",
-
-
-
-            reply_markup=make_main_keyboard(user)
-
-
-
-        )
-
-
-
-    except:
-
-
-
-        pass
-
-
-
-
-
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "shop")
-
-
-
-def handle_shop(call):
-
-
-
-    bot.answer_callback_query(call.id)
-
-
-
-    data = load_data()
-
-
-
-    user = get_user(data, call.from_user.id)
-
-
-
-
-
-
-
-    kb = InlineKeyboardMarkup()
-
-
-
-    for uid, upg in UPGRADES.items():
-
-
-
-        if uid in user["upgrades"]:
-
-
-
-            kb.add(InlineKeyboardButton(f"✅ {upg['name']} (куплено)", callback_data="noop"))
-
-
-
-        else:
-
-
-
-            emoji = RARITY_EMOJI[upg["rarity"]]
-
-
-
-            kb.add(InlineKeyboardButton(
-
-
-
-                f"{emoji} {upg['name']} — {upg['cost']}💰",
-
-
-
-                callback_data=f"buy_{uid}"
-
-
-
-            ))
-
-
-
-    kb.add(InlineKeyboardButton("🔙 Назад", callback_data="back"))
-
-
-
-
-
-
-
-    try:
-
-
-
-        bot.edit_message_text(
-
-
-
-            f"🛒 *Магазин улучшений*\n\n💰 У тебя: *{user['coins']}* монет\n\n"
-
-
-
-            f"⚪ Common  🔵 Rare  🟣 Epic  🟡 Legendary",
-
-
-
-            call.message.chat.id,
-
-
-
-            call.message.message_id,
-
-
-
-            parse_mode="Markdown",
-
-
-
-            reply_markup=kb
-
-
-
-        )
-
-
-
-    except:
-
-
-
-        pass
-
-
-
-
-
-
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith("buy_"))
-
-
-
-def handle_buy(call):
-
-
-
-    data = load_data()
-
-
-
-    user = get_user(data, call.from_user.id)
-
-
-
-    uid = call.data.replace("buy_", "")
-
-
-
-    upg = UPGRADES.get(uid)
-
-
-
-
-
-
-
-    if not upg:
-
-
-
-        return
-
-
-
-    if user["coins"] < upg["cost"]:
-
-
-
-        bot.answer_callback_query(call.id, "😢 Дмитрий говорит: не хватает монет!")
-
-
-
-        return
-
-
-
-
-
-
-
-    user["coins"] -= upg["cost"]
-
-
-
-    user["upgrades"].append(uid)
-
-
-
-    user["auto"] += upg["auto"]
-
-
-
-    user["per_click"] += upg["multi"]
-
-
-
-    save_data(data)
-
-
-
-    bot.answer_callback_query(call.id, f"✅ {DMITRIY_PHRASES['upgrade']}")
-
-
-
-    handle_shop(call)
-
-
-
-
-
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "stats")
-
-
-
-def handle_stats(call):
-
-
-
-    bot.answer_callback_query(call.id)
-
-
-
-    data = load_data()
-
-
-
-    user = get_user(data, call.from_user.id)
-
-
-
-    bought = [UPGRADES[u]["name"] for u in user["upgrades"]] or ["Пока ничего"]
-
-
-
-
-
-
-
-    kb = InlineKeyboardMarkup()
-
-
-
-    kb.add(InlineKeyboardButton("🔙 Назад", callback_data="back"))
-
-
-
-
-
-
-
-    try:
-
-
-
-        bot.edit_message_text(
-
-
-
-            f"📊 *Статистика*\n\n"
-
-
-
-            f"💰 Монеты: *{user['coins']}*\n"
-
-
-
-            f"👆 За клик: *{user['per_click']}*\n"
-
-
-
-            f"⚙️ Авто-клик: *{user['auto']}/сек*\n\n"
-
-
-
-            f"🛒 Куплено улучшений: *{len(user['upgrades'])}*\n"
-
-
-
-            f"{', '.join(bought)}",
-
-
-
-            call.message.chat.id,
-
-
-
-            call.message.message_id,
-
-
-
-            parse_mode="Markdown",
-
-
-
-            reply_markup=kb
-
-
-
-        )
-
-
-
-    except:
-
-
-
-        pass
-
-
-
-
-
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "back")
-
-
-
-def handle_back(call):
-
-
-
-    bot.answer_callback_query(call.id)
-
-
-
-    data = load_data()
-
-
-
-    user = get_user(data, call.from_user.id)
-
-
-
-    try:
-
-
-
-        bot.edit_message_text(
-
-
-
-            get_status_text(user),
-
-
-
-            call.message.chat.id,
-
-
-
-            call.message.message_id,
-
-
-
-            parse_mode="Markdown",
-
-
-
-            reply_markup=make_main_keyboard(user)
-
-
-
-        )
-
-
-
-    except:
-
-
-
-        pass
-
-
-
-
-
-
-
-@bot.callback_query_handler(func=lambda call: call.data == "noop")
-def handle_noop(call):
-    bot.answer_callback_query(call.id, "Уже куплено!")
-
-
-
-
-
-
-
-SUPABASE_URL = "https://vaxqqmlzynbfeuyhptlg.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheHFxbWx6eW5iZmV1eWhwdGxnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzIxODk1NywiZXhwIjoyMDkyNzk0OTU3fQ.0q-KZliAIH0pkm2qqdSFZEPdec3VkBEsifJ9NRNNY00"
-ADMIN_ID = 1995678658
-
-@bot.message_handler(commands=['reset'])
-def reset_user(message):
-    if message.from_user.id != ADMIN_ID:
-        bot.reply_to(message, f"Твой ID: {message.from_user.id}, нужен: {ADMIN_ID}")
-        return
-
-    args = message.text.split(maxsplit=1)
-
-    if len(args) < 2:
-        bot.reply_to(message, "Использование: /reset USER_ID")
-        return
-
-    user_id = args[1].split('@')[0].strip()
-
-    try:
-        user_id = int(user_id)
-    except:
-        bot.reply_to(message, "❌ USER_ID должен быть числом")
-        return
-
-    req = urllib.request.Request(
         f"{SUPABASE_URL}/rest/v1/scores?user_id=eq.{user_id}",
         data=json.dumps({"coins": 0, "total_clicks": 0}).encode(),
         headers={
