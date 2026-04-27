@@ -203,10 +203,11 @@
     </button>
   </div>
 
-  <div class="tabs">
+  <div class="tabs" id="tabs-row">
     <button class="tab active" onclick="switchTab('shop', this)">🛒 Магазин</button>
     <button class="tab" onclick="switchTab('stats', this)">📊 Статистика</button>
     <button class="tab" onclick="switchTab('top', this)">🏆 Топ</button>
+    <button class="tab admin-tab section-hidden" id="admin-tab-btn" onclick="switchTab('admin', this)">🛠 Админ</button>
   </div>
 
   <div class="shop" id="tab-shop"></div>
