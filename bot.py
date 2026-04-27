@@ -809,7 +809,7 @@ def handle_noop(call):
 
 
 SUPABASE_URL = "https://vaxqqmlzynbfeuyhptlg.supabase.co"
-SUPABASE_KEY = "sb_publishable_pFEOojlDsQgUs-rAqOwrbQ_mDuYhBAc"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZheHFxbWx6eW5iZmV1eWhwdGxnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzIxODk1NywiZXhwIjoyMDkyNzk0OTU3fQ.0q-KZliAIH0pkm2qqdSFZEPdec3VkBEsifJ9NRNNY00"
 ADMIN_ID = 1995678658
 
 @bot.message_handler(commands=['reset'])
