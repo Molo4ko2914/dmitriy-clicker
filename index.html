@@ -313,6 +313,48 @@ function formatNum(n) {
 }
 
 function handleClick(e) {
+  let lastClickTime = 0;
+let clickIntervals = [];
+let banned = false;
+
+function handleClick(e) {
+  if (banned) {
+    showToast('🚫 Дмитрий тебя забанил за читерство!');
+    return;
+  }
+
+  const now = Date.now();
+  const interval = now - lastClickTime;
+  lastClickTime = now;
+
+  // Слишком быстро (быстрее 50мс = автокликер)
+  if (interval < 50 && interval > 0) {
+    clickIntervals.push(interval);
+  } else {
+    clickIntervals = []; // сбрасываем если нормальный клик
+  }
+
+  // 5+ подозрительных кликов подряд = бан
+  if (clickIntervals.length >= 5) {
+    banned = true;
+    state.coins = 0;
+    state.totalClicks = 0;
+    save();
+    showToast('🚫 Читер обнаружен! Очки обнулены!');
+    return;
+  }
+
+  state.coins += state.perClick;
+  state.totalClicks++;
+  const el = document.getElementById('coins');
+  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+  setTimeout(() => el.classList.remove('bump'), 100);
+  spawnFloat(e, '+' + state.perClick);
+  if (state.totalClicks % 10 === 0) setPhrase(PHRASES[Math.floor(Math.random()*PHRASES.length)]);
+  updateUI(); renderShop();
+  if (state.totalClicks % 5 === 0) save();
+  if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+}
   state.coins += state.perClick;
   state.totalClicks++;
   const el = document.getElementById('coins');
