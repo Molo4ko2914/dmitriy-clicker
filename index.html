@@ -355,18 +355,7 @@ function handleClick(e) {
   if (state.totalClicks % 5 === 0) save();
   if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
 }
-  state.coins += state.perClick;
-  state.totalClicks++;
-  const el = document.getElementById('coins');
-  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
-  setTimeout(() => el.classList.remove('bump'), 100);
-  spawnFloat(e, '+' + state.perClick);
-  if (state.totalClicks % 10 === 0) setPhrase(PHRASES[Math.floor(Math.random()*PHRASES.length)]);
-  updateUI(); renderShop();
-  if (state.totalClicks % 5 === 0) save();
-  if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-}
-
+  
 function spawnFloat(e, text) {
   const area = document.getElementById('click-area');
   const rect = area.getBoundingClientRect();
