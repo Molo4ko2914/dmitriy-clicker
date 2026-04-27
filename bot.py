@@ -816,6 +816,26 @@ def handle_noop(call):
 
 print("Бот запускается...")
 
+ADMIN_ID = 1995678658
 
+@bot.message_handler(commands=['reset'])
+def reset_user(message):
+    if message.from_user.id != ADMIN_ID:
+        bot.reply_to(message, "❌ Нет доступа")
+        return
+    
+    args = message.text.split()
+    if len(args) < 2:
+        bot.reply_to(message, "Использование: /reset USER_ID")
+        return
+    
+    user_id = args[1]
+    data = load_data()
+    if user_id in data:
+        data[user_id] = {"coins": 0, "per_click": 1, "auto": 0, "upgrades": []}
+        save_data(data)
+        bot.reply_to(message, f"✅ Прогресс {user_id} сброшен!")
+    else:
+        bot.reply_to(message, "❌ Игрок не найден")
 
 bot.polling(none_stop=True)
