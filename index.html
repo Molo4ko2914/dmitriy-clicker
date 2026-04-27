@@ -323,7 +323,7 @@
 
   <div class="shop" id="tab-shop"></div>
   <div class="stats-panel section-hidden" id="tab-stats"></div>
-  <div class="section-hidden" id="tab-achieve" style="display:none"></div>
+  <div class="section-hidden" id="tab-achieve"></div>
   <div class="leaderboard section-hidden" id="tab-top"></div>
   <div class="section-hidden" id="tab-admin"></div>
 </div>
@@ -445,11 +445,36 @@ function renderAchievements() {
   for (const ach of ACHIEVEMENTS) {
     const isUnlocked = unlocked.includes(ach.id);
     const isSecret = ach.secret && !isUnlocked;
+    const isFiveStar = ach.stars === 5 && !isUnlocked;
+
+    // Для 5-звёздочных незаблокированных — загадочный намёк вместо точного описания
+    const fiveStarHints = {
+      'clicks_100000': 'Твой палец должен стать легендой...',
+      'coins_1000000': 'Богатство, о котором другие лишь мечтают...',
+      'upg_all':       'Коллекция, достойная настоящего Дмитрия...',
+      'easter_5':      'Дмитрий скрывает нечто особенное для упрямых...',
+    };
+
+    let displayName, displayDesc, displayIcon;
+    if (isSecret) {
+      displayIcon = '❓';
+      displayName = '???';
+      displayDesc = 'Секретное достижение';
+    } else if (isFiveStar) {
+      displayIcon = ach.icon;
+      displayName = '?????';
+      displayDesc = fiveStarHints[ach.id] || 'Достигни невозможного...';
+    } else {
+      displayIcon = ach.icon;
+      displayName = ach.name;
+      displayDesc = ach.desc;
+    }
+
     cards += `<div class="ach-card ${isUnlocked ? 'unlocked' : 'locked'} ${ach.secret ? 'secret' : ''}">
-      <div class="ach-icon">${isSecret ? '❓' : ach.icon}</div>
+      <div class="ach-icon">${displayIcon}</div>
       <div class="ach-info">
-        <div class="ach-name">${isSecret ? '???' : ach.name}</div>
-        <div class="ach-desc">${isSecret ? 'Секретное достижение' : ach.desc}</div>
+        <div class="ach-name">${displayName}</div>
+        <div class="ach-desc">${displayDesc}</div>
       </div>
       <div class="ach-stars">${starsHtml(5, ach.stars)}</div>
       ${isUnlocked ? '<div class="ach-unlocked-badge">✓ Получено</div>' : ''}
@@ -720,12 +745,13 @@ setTimeout(checkAdmin, 2000);
 function switchTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  const tabs = ['shop','stats','top','admin'];
+  const tabs = ['shop','stats','achieve','top','admin'];
   tabs.forEach(t => {
     const el = document.getElementById('tab-'+t);
     if (el) el.classList.toggle('section-hidden', t !== name);
   });
   if (name === 'stats') renderStats();
+  if (name === 'achieve') renderAchievements();
   if (name === 'top') loadLeaderboard();
   if (name === 'admin') renderAdmin();
 }
@@ -872,10 +898,27 @@ const EASTER_STAGES = [
 ];
 
 function easterEgg() {
+  const unlocked = state.achievements || [];
+  const alreadyFound = unlocked.includes('easter_found');
+
+  if (alreadyFound && easterClickCount === 0) {
+    // Первый клик после того как пасхалка уже была получена — показываем сообщение
+    document.getElementById('easter-emoji').textContent = '😏';
+    document.getElementById('easter-title').textContent = 'ТЫ УЖЕ ТУТ БЫЛ!';
+    document.getElementById('easter-text').textContent = 'Ты уже получил эту пасхалку. Дмитрий помнит тебя.';
+    document.getElementById('easter-overlay').classList.add('show');
+    if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+    return;
+  }
+
   const stage = EASTER_STAGES[Math.min(easterClickCount, EASTER_STAGES.length - 1)];
   document.getElementById('easter-emoji').textContent = stage.emoji;
   document.getElementById('easter-title').textContent = stage.title;
   document.getElementById('easter-text').textContent = stage.text;
+
+  // Инкрементируем счётчик пасхалки в state
+  if (!state.easterFound) state.easterFound = 0;
+  state.easterFound++;
 
   // На 5-м нажатии — выдаём монеты
   if (easterClickCount === 4) {
@@ -887,6 +930,8 @@ function easterEgg() {
   easterClickCount++;
   document.getElementById('easter-overlay').classList.add('show');
   if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+  checkAchievements();
+  save();
 }
 
 function closeEasterBtn() {
