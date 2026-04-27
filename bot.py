@@ -205,10 +205,7 @@ def get_user(data, user_id):
 def make_main_keyboard(user):
 
 
-diff --git a/bot.py b/bot.py
-index 2e71c4702ff6299b05e9076676f38262b33e0004..d977564621e669c7d210c6c42f960749556ce6c7 100644
---- a/bot.py
-+++ b/bot.py
+
 @@ -208,50 +208,64 @@ def make_main_keyboard(user):
  
      kb = InlineKeyboardMarkup()
