@@ -818,12 +818,20 @@ def reset_user(message):
         bot.reply_to(message, f"Твой ID: {message.from_user.id}, нужен: {ADMIN_ID}")
         return
 
-    args = message.text.split()
+    args = message.text.split(maxsplit=1)
+
     if len(args) < 2:
         bot.reply_to(message, "Использование: /reset USER_ID")
         return
 
-    user_id = args[1]
+    user_id = args[1].split('@')[0].strip()
+
+    try:
+        user_id = int(user_id)
+    except:
+        bot.reply_to(message, "❌ USER_ID должен быть числом")
+        return
+
     req = urllib.request.Request(
         f"{SUPABASE_URL}/rest/v1/scores?user_id=eq.{user_id}",
         data=json.dumps({"coins": 0, "total_clicks": 0}).encode(),
@@ -835,8 +843,12 @@ def reset_user(message):
         },
         method="PATCH"
     )
-    urllib.request.urlopen(req)
-    bot.reply_to(message, f"✅ Прогресс {user_id} сброшен в Supabase!")
+
+    try:
+        urllib.request.urlopen(req)
+        bot.reply_to(message, f"✅ Прогресс {user_id} сброшен в Supabase!")
+    except Exception as e:
+        bot.reply_to(message, f"❌ Ошибка Supabase: {e}")
 
 print("Бот запускается...")
 bot.polling(none_stop=True)
