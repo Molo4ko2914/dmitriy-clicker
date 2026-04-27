@@ -20,6 +20,10 @@
     --rare: #4dabf7;
     --epic: #cc5de8;
     --legendary: #ffd43b;
+    --mythic: #ff6b35;
+    --divine: #00f5ff;
+    --cursed: #39ff14;
+    --cosmic: #ff1493;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -128,6 +132,20 @@
   .rarity-Rare .upgrade-rarity-bar { background: var(--rare); }
   .rarity-Epic .upgrade-rarity-bar { background: var(--epic); }
   .rarity-Legendary .upgrade-rarity-bar { background: var(--legendary); box-shadow: 0 0 10px var(--legendary); }
+  .rarity-Mythic .upgrade-rarity-bar { background: var(--mythic); box-shadow: 0 0 12px var(--mythic); }
+  .rarity-Divine .upgrade-rarity-bar { background: var(--divine); box-shadow: 0 0 14px var(--divine); }
+  .rarity-Cursed .upgrade-rarity-bar { background: var(--cursed); box-shadow: 0 0 12px var(--cursed); }
+  .rarity-Cosmic .upgrade-rarity-bar { background: linear-gradient(var(--cosmic), var(--divine)); box-shadow: 0 0 16px var(--cosmic); }
+  .rarity-Mythic.upgrade-card { background: linear-gradient(135deg, #16213e, #2a1000); border-color: #ff6b3522; }
+  .rarity-Mythic.upgrade-card.affordable:hover { border-color: var(--mythic); box-shadow: 0 0 24px #ff6b3533; }
+  .rarity-Divine.upgrade-card { background: linear-gradient(135deg, #16213e, #001a2a); border-color: #00f5ff22; }
+  .rarity-Divine.upgrade-card.affordable:hover { border-color: var(--divine); box-shadow: 0 0 28px #00f5ff44; }
+  .rarity-Cursed.upgrade-card { background: linear-gradient(135deg, #0a1a0a, #16213e); border-color: #39ff1422; }
+  .rarity-Cursed.upgrade-card.affordable:hover { border-color: var(--cursed); box-shadow: 0 0 28px #39ff1444; }
+  .rarity-Cosmic.upgrade-card { background: linear-gradient(135deg, #1a0020, #00101a); border-color: #ff149344; }
+  .rarity-Cosmic.upgrade-card.affordable:hover { border-color: var(--cosmic); box-shadow: 0 0 40px #ff149366; }
+  @keyframes cosmicPulse { 0%,100% { box-shadow: 0 0 20px #ff149355; } 50% { box-shadow: 0 0 50px #00f5ff55; } }
+  .rarity-Cosmic.upgrade-card { animation: cosmicPulse 2.5s ease-in-out infinite; }
   .upgrade-icon { font-size: 28px; flex-shrink: 0; }
   .upgrade-info { flex: 1; min-width: 0; }
   .upgrade-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -136,6 +154,10 @@
   .rarity-Rare .upgrade-name { color: var(--rare); }
   .rarity-Epic .upgrade-name { color: var(--epic); }
   .rarity-Legendary .upgrade-name { color: var(--legendary); }
+  .rarity-Mythic .upgrade-name { color: var(--mythic); text-shadow: 0 0 8px #ff6b3566; }
+  .rarity-Divine .upgrade-name { color: var(--divine); text-shadow: 0 0 8px #00f5ff66; }
+  .rarity-Cursed .upgrade-name { color: var(--cursed); text-shadow: 0 0 8px #39ff1466; }
+  .rarity-Cosmic .upgrade-name { background: linear-gradient(90deg, var(--cosmic), var(--divine), var(--cosmic)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 6px var(--cosmic)); }
   .upgrade-cost { font-family: 'Russo One', sans-serif; font-size: 13px; color: var(--gold); flex-shrink: 0; text-align: right; }
   .upgrade-cost.bought-label { color: #4caf50; font-size: 11px; }
 
@@ -271,12 +293,12 @@
   /* ACHIEVEMENT POPUP */
   .ach-popup {
     position: fixed; top: 20px; left: 50%;
-    transform: translateX(-50%) translateY(-120px);
+    transform: translateX(-50%) translateY(calc(-100% - 40px));
     background: linear-gradient(135deg, #1a1a2e, #16213e);
     border: 2px solid var(--gold); border-radius: 20px;
     padding: 14px 20px; z-index: 9998; min-width: 260px; max-width: 340px;
     display: flex; align-items: center; gap: 14px;
-    box-shadow: 0 8px 40px #ffd70044; transition: transform 0.4s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 8px 40px #ffd70044; transition: transform 0.4s ease;
   }
   .ach-popup.show { transform: translateX(-50%) translateY(0); }
   .ach-popup-icon { font-size: 36px; }
@@ -355,14 +377,33 @@ const SUPABASE_URL = 'https://vaxqqmlzynbfeuyhptlg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_pFEOojIDsQgUs-rAqOwrbQ_mDuYhBAc';
 
 const UPGRADES = [
-  { id: 'auto1',  name: 'Кофе для Дмитрия', icon: '☕', desc: '+1 авто/сек',   cost: 50,    auto: 1,   multi: 0,  rarity: 'Common' },
-  { id: 'multi1', name: 'Мозг Дмитрия',     icon: '🧠', desc: 'x2 за клик',   cost: 200,   auto: 0,   multi: 1,  rarity: 'Rare' },
-  { id: 'auto2',  name: 'Ноутбук',           icon: '💻', desc: '+5 авто/сек',  cost: 300,   auto: 5,   multi: 0,  rarity: 'Rare' },
-  { id: 'auto3',  name: 'Робот-помощник',    icon: '🤖', desc: '+20 авто/сек', cost: 1000,  auto: 20,  multi: 0,  rarity: 'Epic' },
-  { id: 'multi2', name: 'Суперсила',         icon: '⚡', desc: 'x5 за клик',   cost: 2000,  auto: 0,   multi: 4,  rarity: 'Epic' },
-  { id: 'auto4',  name: 'Завод Дмитрия',     icon: '🏭', desc: '+100 авто/сек',cost: 10000, auto: 100, multi: 0,  rarity: 'Legendary' },
-  { id: 'multi3', name: 'Корона Дмитрия',    icon: '👑', desc: 'x10 за клик',  cost: 15000, auto: 0,   multi: 9,  rarity: 'Legendary' },
-  { id: 'multi4', name: 'НОВЫЙ РОБОТ ПЫЛЕСОС',  icon: '🤪', desc: 'x100 за клик', cost: 999999,auto: 0,   multi: 99, rarity: 'Legendary' },
+  // COMMON
+  { id: 'auto1',   name: 'Кофе для Дмитрия',   icon: '☕', desc: '+1 авто/сек',    cost: 50,       auto: 1,    multi: 0,   rarity: 'Common' },
+  { id: 'auto1b',  name: 'Печеньки',            icon: '🍪', desc: '+2 авто/сек',    cost: 120,      auto: 2,    multi: 0,   rarity: 'Common' },
+  // RARE
+  { id: 'multi1',  name: 'Мозг Дмитрия',        icon: '🧠', desc: 'x2 за клик',    cost: 200,      auto: 0,    multi: 1,   rarity: 'Rare' },
+  { id: 'auto2',   name: 'Ноутбук',             icon: '💻', desc: '+5 авто/сек',    cost: 300,      auto: 5,    multi: 0,   rarity: 'Rare' },
+  { id: 'auto2b',  name: 'Умные часы',          icon: '⌚', desc: '+8 авто/сек',    cost: 500,      auto: 8,    multi: 0,   rarity: 'Rare' },
+  // EPIC
+  { id: 'auto3',   name: 'Робот-помощник',      icon: '🤖', desc: '+20 авто/сек',   cost: 1000,     auto: 20,   multi: 0,   rarity: 'Epic' },
+  { id: 'multi2',  name: 'Суперсила',           icon: '⚡', desc: 'x5 за клик',     cost: 2000,     auto: 0,    multi: 4,   rarity: 'Epic' },
+  { id: 'auto3b',  name: 'Дата-центр',          icon: '🖥️', desc: '+50 авто/сек',   cost: 4000,     auto: 50,   multi: 0,   rarity: 'Epic' },
+  // LEGENDARY
+  { id: 'auto4',   name: 'Завод Дмитрия',       icon: '🏭', desc: '+100 авто/сек',  cost: 10000,    auto: 100,  multi: 0,   rarity: 'Legendary' },
+  { id: 'multi3',  name: 'Корона Дмитрия',      icon: '👑', desc: 'x10 за клик',    cost: 15000,    auto: 0,    multi: 9,   rarity: 'Legendary' },
+  // MYTHIC — оранжевый огонь
+  { id: 'auto5',   name: 'Армия Дмитриев',      icon: '🪖', desc: '+500 авто/сек',  cost: 75000,    auto: 500,  multi: 0,   rarity: 'Mythic' },
+  { id: 'multi5',  name: 'Кулак судьбы',        icon: '🔥', desc: 'x25 за клик',    cost: 100000,   auto: 0,    multi: 24,  rarity: 'Mythic' },
+  { id: 'auto5b',  name: 'Мегазавод',           icon: '⚙️', desc: '+1000 авто/сек', cost: 200000,   auto: 1000, multi: 0,   rarity: 'Mythic' },
+  // DIVINE — голубой
+  { id: 'multi6',  name: 'Божественный клик',   icon: '✨', desc: 'x50 за клик',    cost: 500000,   auto: 0,    multi: 49,  rarity: 'Divine' },
+  { id: 'auto6',   name: 'Облачный разум',      icon: '🌐', desc: '+5000 авто/сек', cost: 750000,   auto: 5000, multi: 0,   rarity: 'Divine' },
+  // CURSED — кислотный зелёный
+  { id: 'multi7',  name: 'Проклятый палец',     icon: '☠️', desc: 'x200 за клик',   cost: 2500000,  auto: 0,    multi: 199, rarity: 'Cursed' },
+  { id: 'auto7',   name: 'Тёмный реактор',      icon: '💀', desc: '+20000 авто/сек',cost: 5000000,  auto: 20000,multi: 0,   rarity: 'Cursed' },
+  // COSMIC — розово-синий градиент (ультра)
+  { id: 'multi4',  name: 'НОВЫЙ РОБОТ ПЫЛЕСОС', icon: '🤪', desc: 'x100 за клик',   cost: 999999,   auto: 0,    multi: 99,  rarity: 'Legendary' },
+  { id: 'cosmic1', name: 'КОСМИЧЕСКИЙ ДМИТРИЙ', icon: '🌌', desc: 'x1000 + 100к авто', cost: 50000000, auto: 100000, multi: 999, rarity: 'Cosmic' },
 ];
 
 const PHRASES = ['Так держать! 💪','Хорошая работа!','Дмитрий доволен! 😎','Кликай быстрее!','Неплохо...','Дмитрий одобряет! 👍','ТЫ МАШИНА! 🔥','Дмитрий впечатлён! 🤯'];
