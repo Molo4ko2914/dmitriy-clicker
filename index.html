@@ -303,6 +303,107 @@
   }
   .easter-close:active { transform: scale(0.95); }
   .dmitriy-avatar { cursor: pointer; transition: transform 0.15s; }
+
+  /* EVENT BUTTON */
+  .event-btn {
+    position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+    z-index: 500; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    background: linear-gradient(180deg, #1a0a2e, #0f1a2e);
+    border: 1px solid #ffffff15; border-right: none;
+    border-radius: 14px 0 0 14px;
+    padding: 10px 8px; gap: 6px;
+    box-shadow: -4px 0 24px #00000066;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .event-btn:active { transform: translateY(-50%) scale(0.95); }
+  .event-cover {
+    width: 40px; height: 40px; border-radius: 10px; overflow: hidden;
+    background: linear-gradient(135deg, #1a0030, #001030);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; position: relative;
+    box-shadow: 0 0 12px #8800ff44;
+    border: 1px solid #8800ff44;
+  }
+  .event-cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, #8800ff22, transparent 60%, #00aaff11);
+    pointer-events: none;
+  }
+  @keyframes eventGlow {
+    0%,100% { box-shadow: 0 0 12px #8800ff55; }
+    50%      { box-shadow: 0 0 22px #00aaff77; }
+  }
+  .event-cover { animation: eventGlow 2s ease-in-out infinite; }
+  .event-label {
+    font-family: 'Russo One', sans-serif; font-size: 8px; color: #ffffff88;
+    letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+  .event-pulse {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+    animation: pulse 1.2s ease-in-out infinite;
+    box-shadow: 0 0 6px var(--accent);
+  }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.7); } }
+
+  /* EVENT MODAL */
+  .event-overlay {
+    position: fixed; inset: 0; z-index: 9990;
+    background: rgba(0,0,0,0.88);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  .event-overlay.show { opacity: 1; pointer-events: all; }
+  .event-modal {
+    background: linear-gradient(160deg, #0d0020, #001020, #0a0015);
+    border: 1px solid #8800ff44; border-radius: 24px;
+    padding: 0; width: 88%; max-width: 340px; overflow: hidden;
+    transform: scale(0.85) translateY(30px);
+    transition: transform 0.35s cubic-bezier(.22,.68,0,1.2);
+    box-shadow: 0 0 60px #8800ff33, 0 20px 60px #00000088;
+  }
+  .event-overlay.show .event-modal { transform: scale(1) translateY(0); }
+  .event-modal-cover {
+    width: 100%; height: 160px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #1a0030 0%, #000820 50%, #001a30 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .event-modal-cover-emoji { font-size: 80px; filter: drop-shadow(0 0 20px #8800ffaa); z-index: 1; }
+  .event-modal-cover::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, #8800ff22 0%, transparent 70%);
+  }
+  .event-modal-cover::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
+    background: linear-gradient(transparent, #0d0020);
+  }
+  .event-modal-body { padding: 20px 22px 24px; }
+  .event-modal-title {
+    font-family: 'Russo One', sans-serif; font-size: 20px;
+    color: #ffffff; letter-spacing: 2px; text-align: center; margin-bottom: 6px;
+    text-shadow: 0 0 20px #8800ffaa;
+  }
+  .event-modal-sub { font-size: 11px; color: #888; text-align: center; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; }
+  .countdown-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px;
+  }
+  .countdown-cell {
+    background: #ffffff08; border-radius: 12px; padding: 12px 6px;
+    text-align: center; border: 1px solid #ffffff0f;
+  }
+  .countdown-val {
+    font-family: 'Russo One', sans-serif; font-size: 24px; color: #fff;
+    text-shadow: 0 0 12px #8800ff88; line-height: 1;
+  }
+  .countdown-lbl { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .event-close-btn {
+    width: 100%; padding: 12px; background: #ffffff08; border: 1px solid #ffffff15;
+    border-radius: 12px; color: #888; font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .event-close-btn:active { background: #ffffff12; }
   .dmitriy-avatar:active { transform: scale(0.88); }
 
   /* ACHIEVEMENTS */
@@ -404,6 +505,33 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- EVENT BUTTON -->
+<div class="event-btn" onclick="openEvent()">
+  <div class="event-pulse"></div>
+  <div class="event-cover">🔒</div>
+  <div class="event-label">СОБЫТИЕ</div>
+</div>
+
+<!-- EVENT MODAL -->
+<div class="event-overlay" id="event-overlay" onclick="closeEventModal(event)">
+  <div class="event-modal">
+    <div class="event-modal-cover">
+      <div class="event-modal-cover-emoji">🔒</div>
+    </div>
+    <div class="event-modal-body">
+      <div class="event-modal-title">???</div>
+      <div class="event-modal-sub">Скоро откроется</div>
+      <div class="countdown-grid">
+        <div class="countdown-cell"><div class="countdown-val" id="cd-days">--</div><div class="countdown-lbl">дней</div></div>
+        <div class="countdown-cell"><div class="countdown-val" id="cd-hours">--</div><div class="countdown-lbl">часов</div></div>
+        <div class="countdown-cell"><div class="countdown-val" id="cd-mins">--</div><div class="countdown-lbl">минут</div></div>
+        <div class="countdown-cell"><div class="countdown-val" id="cd-secs">--</div><div class="countdown-lbl">секунд</div></div>
+      </div>
+      <button class="event-close-btn" onclick="closeEventModal()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <!-- ACHIEVEMENT POPUP -->
 <div class="ach-popup" id="ach-popup">
   <div class="ach-popup-icon" id="ach-popup-icon">🏅</div>
@@ -503,10 +631,10 @@ const ACHIEVEMENTS = [
 
   // ПАСХАЛКИ (скрытые — секретные)
   { id: 'easter_found',  icon: '🧔', name: 'Нашёл Дмитрия',      desc: 'Нажми на аватар Дмитрия',   stars: 3, secret: true, check: s => s.easterFound >= 1 },
-  { id: 'easter_5',      icon: '👑', name: 'Упрямец',            desc: '???',                        stars: 5, secret: true, check: s => s.easterFound >= 5 },
-  { id: 'easter_title',  icon: '🏷️', name: 'Читатель',           desc: '???',                        stars: 2, secret: true, check: s => s.titleClicked },
-  { id: 'easter_night',  icon: '🌙', name: 'Ночной кликер',      desc: '???',                        stars: 3, secret: true, check: s => s.nightClick },
-  { id: 'easter_speed',  icon: '⚡', name: 'Молния Дмитрия',     desc: '???',                        stars: 4, secret: true, check: s => s.speedClicks >= 8 },
+  { id: 'easter_5',      icon: '👑', name: 'Упрямец',            desc: 'Нажал на аватар 5 раз',      stars: 5, secret: true, check: s => s.easterFound >= 5 },
+  { id: 'easter_title',  icon: '🏷️', name: 'Читатель',           desc: 'Нажал на заголовок игры',    stars: 2, secret: true, check: s => s.titleClicked },
+  { id: 'easter_night',  icon: '🌙', name: 'Ночной кликер',      desc: 'Кликал с 23:00 до 4:00',     stars: 3, secret: true, check: s => s.nightClick },
+  { id: 'easter_speed',  icon: '⚡', name: 'Молния Дмитрия',     desc: '15 кликов за 2 секунды',     stars: 4, secret: true, check: s => s.speedClicks >= 15 },
 ];
 
 let achPopupTimer = null;
@@ -562,8 +690,10 @@ function renderAchievements() {
     const fiveStarHints = {
       'clicks_100000': 'Твой палец должен стать легендой...',
       'coins_1000000': 'Богатство, о котором другие лишь мечтают...',
+      'coins_10m':     'Планета не продаётся... или всё-таки да?',
       'upg_all':       'Коллекция, достойная настоящего Дмитрия...',
       'easter_5':      'Дмитрий скрывает нечто особенное для упрямых...',
+      'auto_1000':     'Когда твой завод стал галактикой...',
     };
 
     let displayName, displayDesc, displayIcon;
@@ -720,6 +850,42 @@ async function loadLeaderboard() {
   }
 }
 
+function openEvent() {
+  document.getElementById('event-overlay').classList.add('show');
+  updateCountdown();
+}
+function closeEventModal(e) {
+  if (!e || e.target === document.getElementById('event-overlay')) {
+    document.getElementById('event-overlay').classList.remove('show');
+  }
+}
+let countdownInterval = null;
+function updateCountdown() {
+  const target = new Date('2025-06-01T00:00:00');
+  function tick() {
+    const now = new Date();
+    const diff = target - now;
+    if (diff <= 0) {
+      document.getElementById('cd-days').textContent = '00';
+      document.getElementById('cd-hours').textContent = '00';
+      document.getElementById('cd-mins').textContent = '00';
+      document.getElementById('cd-secs').textContent = '00';
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
+    document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-mins').textContent  = String(m).padStart(2,'0');
+    document.getElementById('cd-secs').textContent  = String(s).padStart(2,'0');
+  }
+  tick();
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(tick, 1000);
+}
+
 function updateUI() {
   document.getElementById('coins').textContent = formatNum(state.coins);
   document.getElementById('per-click').textContent = state.perClick;
@@ -769,7 +935,7 @@ function handleClick(e) {
   if (!state._speedBuf) state._speedBuf = [];
   state._speedBuf.push(Date.now());
   state._speedBuf = state._speedBuf.filter(t => Date.now() - t < 2000);
-  if (state._speedBuf.length >= 8) {
+  if (state._speedBuf.length >= 15) {
     if (!state.speedClicks) state.speedClicks = 0;
     state.speedClicks = Math.max(state.speedClicks, state._speedBuf.length);
   }
@@ -862,7 +1028,7 @@ function buyUpgrade(id) {
   state.coins -= upg.cost; state.bought.push(id);
   state.auto += upg.auto; state.perClick += upg.multi;
   setPhrase('Дмитрий одобряет! 👍'); showToast('✅ ' + upg.name + ' куплено!');
-  updateUI(); renderShop(); save();
+  updateUI(); renderShop(); checkAchievements(); save();
   if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
 }
 
