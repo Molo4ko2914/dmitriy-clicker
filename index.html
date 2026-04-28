@@ -408,7 +408,7 @@
 
   /* WORLD 2 BUTTON */
   .world2-btn {
-    display: none;
+    display: flex;
     position: fixed; right: 0; top: calc(50% - 80px); transform: translateY(-50%);
     z-index: 500; cursor: pointer;
     flex-direction: column; align-items: center;
@@ -420,8 +420,15 @@
     transition: transform 0.2s, background 0.2s;
     animation: hellGlow 1.5s ease-in-out infinite;
   }
-  .world2-btn.visible { display: flex; }
+  .world2-btn.locked {
+    background: linear-gradient(180deg, #1a1a1a, #0d0d0d);
+    border-color: #44444433;
+    box-shadow: -4px 0 24px #44444433;
+    animation: none;
+    cursor: not-allowed;
+  }
   .world2-btn:active { transform: translateY(-50%) scale(0.95); }
+  .world2-btn.locked:active { transform: translateY(-50%); }
   @keyframes hellGlow {
     0%,100% { box-shadow: -4px 0 24px #ff220033; }
     50%      { box-shadow: -4px 0 40px #ff220099; }
@@ -433,10 +440,26 @@
     font-size: 22px; border: 1px solid #ff220044;
     box-shadow: 0 0 12px #ff220044;
   }
+  .world2-btn.locked .world2-icon {
+    background: linear-gradient(135deg, #222222, #111111);
+    border-color: #44444444;
+    box-shadow: 0 0 12px #44444444;
+  }
   .world2-label {
     font-family: 'Russo One', sans-serif; font-size: 8px; color: #ff220088;
     letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: mixed;
     transform: rotate(180deg);
+  }
+  .world2-btn.locked .world2-label {
+    color: #666666;
+  }
+  .world2-progress {
+    font-family: 'Russo One', sans-serif; font-size: 7px; color: #ff220066;
+    letter-spacing: 0.5px; writing-mode: vertical-rl; text-orientation: mixed;
+    transform: rotate(180deg); margin-top: 4px;
+  }
+  .world2-btn.locked .world2-progress {
+    color: #555555;
   }
 
   /* TETRIS OVERLAY */
@@ -746,9 +769,10 @@
 </div>
 
 <!-- WORLD 2 BUTTON -->
-<div class="world2-btn" id="world2-btn" onclick="goToWorld2()">
-  <div class="world2-icon">🔥</div>
-  <div class="world2-label">АД</div>
+<div class="world2-btn locked" id="world2-btn" onclick="tryGoToWorld2()">
+  <div class="world2-icon" id="world2-icon">🔒</div>
+  <div class="world2-label" id="world2-label">ЗАКРЫТО</div>
+  <div class="world2-progress" id="world2-progress">0/31</div>
 </div>
 
 <!-- TETRIS OVERLAY -->
@@ -866,49 +890,49 @@ const UPGRADES = [
   // ── COMMON ── старт, почти ничего не даёт
   { id: 'c1',  name: 'Кофе для Дмитрия',     icon: '☕', desc: '+1 авто/сек',         cost: 75,         auto: 1,      multi: 0,    rarity: 'Common' },
   { id: 'c2',  name: 'Печеньки',              icon: '🍪', desc: '+2 авто/сек',         cost: 180,        auto: 2,      multi: 0,    rarity: 'Common' },
-  { id: 'c3',  name: 'Двойной эспрессо',      icon: '🫖', desc: '+1 к клику',          cost: 300,        auto: 0,      multi: 1,    rarity: 'Common' },
+  { id: 'c3',  name: 'Двойной эспрессо',      icon: '🫖', desc: '+2 к клику',          cost: 300,        auto: 0,      multi: 2,    rarity: 'Common' },
   { id: 'c4',  name: 'Энергетик',             icon: '🥤', desc: '+4 авто/сек',         cost: 500,        auto: 4,      multi: 0,    rarity: 'Common' },
 
   // ── RARE ── первый реальный прогресс
-  { id: 'r1',  name: 'Мозг Дмитрия',          icon: '🧠', desc: 'x2 за клик',          cost: 1100,       auto: 0,      multi: 1,    rarity: 'Rare' },
+  { id: 'r1',  name: 'Мозг Дмитрия',          icon: '🧠', desc: 'x3 за клик',          cost: 1100,       auto: 0,      multi: 2,    rarity: 'Rare' },
   { id: 'r2',  name: 'Ноутбук',               icon: '💻', desc: '+10 авто/сек',        cost: 1800,       auto: 10,     multi: 0,    rarity: 'Rare' },
   { id: 'r3',  name: 'Умные часы',             icon: '⌚', desc: '+15 авто/сек',        cost: 3000,       auto: 15,     multi: 0,    rarity: 'Rare' },
-  { id: 'r4',  name: 'Планшет Дмитрия',        icon: '📱', desc: 'x3 за клик',          cost: 4500,       auto: 0,      multi: 2,    rarity: 'Rare' },
+  { id: 'r4',  name: 'Планшет Дмитрия',        icon: '📱', desc: 'x5 за клик',          cost: 4500,       auto: 0,      multi: 4,    rarity: 'Rare' },
   { id: 'r5',  name: 'Механическая клавиатура',icon: '⌨️', desc: '+20 авто/сек',        cost: 6500,       auto: 20,     multi: 0,    rarity: 'Rare' },
 
   // ── EPIC ── уже надо копить
   { id: 'e1',  name: 'Робот-помощник',         icon: '🤖', desc: '+50 авто/сек',        cost: 15000,      auto: 50,     multi: 0,    rarity: 'Epic' },
-  { id: 'e2',  name: 'Суперсила',              icon: '⚡', desc: 'x5 за клик',          cost: 25000,      auto: 0,      multi: 4,    rarity: 'Epic' },
+  { id: 'e2',  name: 'Суперсила',              icon: '⚡', desc: 'x10 за клик',         cost: 25000,      auto: 0,      multi: 9,    rarity: 'Epic' },
   { id: 'e3',  name: 'Дата-центр',             icon: '🖥️', desc: '+120 авто/сек',       cost: 45000,      auto: 120,    multi: 0,    rarity: 'Epic' },
-  { id: 'e4',  name: 'Квантовый процессор',    icon: '💡', desc: 'x8 за клик',          cost: 65000,      auto: 0,      multi: 7,    rarity: 'Epic' },
+  { id: 'e4',  name: 'Квантовый процессор',    icon: '💡', desc: 'x20 за клик',         cost: 65000,      auto: 0,      multi: 19,   rarity: 'Epic' },
   { id: 'e5',  name: 'Нейросеть Дмитрия',     icon: '🕸️', desc: '+300 авто/сек',       cost: 110000,     auto: 300,    multi: 0,    rarity: 'Epic' },
 
   // ── LEGENDARY ── серьёзные деньги
   { id: 'l1',  name: 'Завод Дмитрия',          icon: '🏭', desc: '+600 авто/сек',       cost: 250000,     auto: 600,    multi: 0,    rarity: 'Legendary' },
-  { id: 'l2',  name: 'Корона Дмитрия',         icon: '👑', desc: 'x15 за клик',         cost: 370000,     auto: 0,      multi: 14,   rarity: 'Legendary' },
+  { id: 'l2',  name: 'Корона Дмитрия',         icon: '👑', desc: 'x40 за клик',         cost: 370000,     auto: 0,      multi: 39,   rarity: 'Legendary' },
   { id: 'l3',  name: 'Армия клонов',           icon: '🪖', desc: '+1500 авто/сек',      cost: 600000,     auto: 1500,   multi: 0,    rarity: 'Legendary' },
-  { id: 'l4',  name: 'Золотой кулак',          icon: '🥊', desc: 'x25 за клик',         cost: 900000,     auto: 0,      multi: 24,   rarity: 'Legendary' },
+  { id: 'l4',  name: 'Золотой кулак',          icon: '🥊', desc: 'x80 за клик',         cost: 900000,     auto: 0,      multi: 79,   rarity: 'Legendary' },
 
   // ── MYTHIC ── гринд начинается
   { id: 'm1',  name: 'Мегазавод',              icon: '⚙️', desc: '+5000 авто/сек',      cost: 2200000,    auto: 5000,   multi: 0,    rarity: 'Mythic' },
-  { id: 'm2',  name: 'Кулак судьбы',           icon: '🔥', desc: 'x40 за клик',         cost: 3700000,    auto: 0,      multi: 39,   rarity: 'Mythic' },
+  { id: 'm2',  name: 'Кулак судьбы',           icon: '🔥', desc: 'x150 за клик',        cost: 3700000,    auto: 0,      multi: 149,  rarity: 'Mythic' },
   { id: 'm3',  name: 'Армия Дмитриев',         icon: '💥', desc: '+12000 авто/сек',     cost: 6500000,    auto: 12000,  multi: 0,    rarity: 'Mythic' },
-  { id: 'm4',  name: 'Термоядерный палец',     icon: '☢️', desc: 'x75 за клик',         cost: 11000000,   auto: 0,      multi: 74,   rarity: 'Mythic' },
+  { id: 'm4',  name: 'Термоядерный палец',     icon: '☢️', desc: 'x300 за клик',        cost: 11000000,   auto: 0,      multi: 299,  rarity: 'Mythic' },
   { id: 'm5',  name: 'Гиперреактор',           icon: '🌡️', desc: '+30000 авто/сек',     cost: 18000000,   auto: 30000,  multi: 0,    rarity: 'Mythic' },
 
   // ── DIVINE ── элита
-  { id: 'd1',  name: 'Божественный клик',      icon: '✨', desc: 'x120 за клик',        cost: 45000000,   auto: 0,      multi: 119,  rarity: 'Divine' },
+  { id: 'd1',  name: 'Божественный клик',      icon: '✨', desc: 'x500 за клик',        cost: 45000000,   auto: 0,      multi: 499,  rarity: 'Divine' },
   { id: 'd2',  name: 'Облачный разум',         icon: '🌐', desc: '+80000 авто/сек',     cost: 75000000,   auto: 80000,  multi: 0,    rarity: 'Divine' },
-  { id: 'd3',  name: 'Световой удар',          icon: '🌟', desc: 'x200 за клик',        cost: 150000000,  auto: 0,      multi: 199,  rarity: 'Divine' },
+  { id: 'd3',  name: 'Световой удар',          icon: '🌟', desc: 'x1000 за клик',       cost: 150000000,  auto: 0,      multi: 999,  rarity: 'Divine' },
   { id: 'd4',  name: 'Бог-машина',             icon: '🏛️', desc: '+250000 авто/сек',    cost: 300000000,  auto: 250000, multi: 0,    rarity: 'Divine' },
 
   // ── CURSED ── почти недостижимо
-  { id: 'cu1', name: 'Проклятый палец',        icon: '☠️', desc: 'x400 за клик',        cost: 750000000,  auto: 0,      multi: 399,  rarity: 'Cursed' },
+  { id: 'cu1', name: 'Проклятый палец',        icon: '☠️', desc: 'x2000 за клик',       cost: 750000000,  auto: 0,      multi: 1999, rarity: 'Cursed' },
   { id: 'cu2', name: 'Тёмный реактор',         icon: '💀', desc: '+1000000 авто/сек',   cost: 1500000000, auto: 1000000,multi: 0,    rarity: 'Cursed' },
-  { id: 'cu3', name: 'Апокалипсис клика',      icon: '🩸', desc: 'x666 за клик',        cost: 3700000000, auto: 0,      multi: 665,  rarity: 'Cursed' },
+  { id: 'cu3', name: 'Апокалипсис клика',      icon: '🩸', desc: 'x5000 за клик',       cost: 3700000000, auto: 0,      multi: 4999, rarity: 'Cursed' },
 
   // ── COSMIC ── финальный босс
-  { id: 'cos1',name: 'КОСМИЧЕСКИЙ ДМИТРИЙ',    icon: '🌌', desc: 'x1000 + 5M авто/сек', cost: 15000000000,auto: 5000000,multi: 999,  rarity: 'Cosmic' },
+  { id: 'cos1',name: 'КОСМИЧЕСКИЙ ДМИТРИЙ',    icon: '🌌', desc: 'x10000 + 5M авто',    cost: 15000000000,auto: 5000000,multi: 9999, rarity: 'Cosmic' },
 ];
 
 const PHRASES = ['Так держать! 💪','Хорошая работа!','Дмитрий доволен! 😎','Кликай быстрее!','Неплохо...','Дмитрий одобряет! 👍','ТЫ МАШИНА! 🔥','Дмитрий впечатлён! 🤯'];
@@ -1433,22 +1457,65 @@ function buyUpgrade(id) {
 
 // World 2 unlock check
 const WORLD1_UPGRADE_IDS = ['c1','c2','c3','c4','r1','r2','r3','r4','r5','e1','e2','e3','e4','e5','l1','l2','l3','l4','m1','m2','m3','m4','m5','d1','d2','d3','d4','cu1','cu2','cu3','cos1'];
+const WORLD2_COINS_REQUIRED = 75000000000; // 75 миллиардов
 
 function checkWorld2Unlock() {
-  const allBought = WORLD1_UPGRADE_IDS.every(id => state.bought.includes(id));
+  const boughtCount = WORLD1_UPGRADE_IDS.filter(id => state.bought.includes(id)).length;
+  const totalCount = WORLD1_UPGRADE_IDS.length;
+  const allBought = boughtCount === totalCount;
+  const hasCoins = state.coins >= WORLD2_COINS_REQUIRED;
+  const unlocked = allBought && hasCoins;
+
   const btn = document.getElementById('world2-btn');
-  if (allBought) {
-    btn.classList.add('visible');
+  const icon = document.getElementById('world2-icon');
+  const label = document.getElementById('world2-label');
+  const progress = document.getElementById('world2-progress');
+
+  if (unlocked) {
+    btn.classList.remove('locked');
+    icon.textContent = '🔥';
+    label.textContent = 'АД';
+    progress.textContent = 'ОТКРЫТО';
     if (!state.world2Unlocked) {
       state.world2Unlocked = true;
       showToast('🔥 МИР АДА ОТКРЫТ!');
       save();
     }
+  } else {
+    btn.classList.add('locked');
+    icon.textContent = '🔒';
+    label.textContent = 'ЗАКРЫТО';
+
+    // Показываем что не хватает
+    if (!allBought && !hasCoins) {
+      progress.textContent = boughtCount + '/' + totalCount;
+    } else if (!allBought) {
+      progress.textContent = boughtCount + '/' + totalCount;
+    } else {
+      progress.textContent = formatNum(state.coins) + '/100B';
+    }
   }
 }
 
-function goToWorld2() {
-  window.location.href = 'world2.html';
+function tryGoToWorld2() {
+  const allBought = WORLD1_UPGRADE_IDS.every(id => state.bought.includes(id));
+  const hasCoins = state.coins >= WORLD2_COINS_REQUIRED;
+
+  if (allBought && hasCoins) {
+    window.location.href = 'world2.html';
+  } else {
+    let msg = '🔒 Требования: ';
+    if (!allBought) {
+      const remaining = WORLD1_UPGRADE_IDS.length - WORLD1_UPGRADE_IDS.filter(id => state.bought.includes(id)).length;
+      msg += remaining + ' апгрейдов';
+    }
+    if (!hasCoins) {
+      if (!allBought) msg += ', ';
+      const need = WORLD2_COINS_REQUIRED - state.coins;
+      msg += formatNum(need) + ' монет';
+    }
+    showToast(msg);
+  }
 }
 
 function renderStats() {
