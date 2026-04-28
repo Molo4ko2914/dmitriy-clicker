@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Мир 2 — Галактика</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Russo+One&family=Orbitron:wght@400;700;900&family=Nunito:wght@400;600;700;900&display=swap');
+
+  :root {
+    --bg: #03030f;
+    --surface: #080820;
+    --card: #0d0d2b;
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --gold: #e0aaff;
+    --text: #e2e8f0;
+    --muted: #6b7280;
+    --common: #94a3b8;
+    --rare: #38bdf8;
+    --epic: #a78bfa;
+    --legendary: #fbbf24;
+    --mythic: #f472b6;
+    --divine: #34d399;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    user-select: none;
+  }
+
+  /* Stars background */
+  .stars-bg {
+    position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+  }
+  .stars-bg canvas { width: 100%; height: 100%; }
+
+  /* Nebula glow */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 30%, #7c3aed22 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 70%, #06b6d422 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 10%, #f472b611 0%, transparent 40%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 420px; margin: 0 auto; padding: 16px; }
+
+  /* Header */
+  .header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding: 14px 18px;
+    background: #0d0d2b99; border-radius: 18px;
+    border: 1px solid #7c3aed33;
+    backdrop-filter: blur(10px);
+  }
+  .world-badge {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+    box-shadow: 0 0 24px #7c3aed66;
+    animation: orbitPulse 3s ease-in-out infinite;
+  }
+  @keyframes orbitPulse {
+    0%,100% { box-shadow: 0 0 24px #7c3aed66; }
+    50%      { box-shadow: 0 0 40px #06b6d488; }
+  }
+  .header-name { font-family: 'Orbitron', sans-serif; font-size: 14px; color: var(--gold); letter-spacing: 1px; }
+  .header-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  .world-switch-btn {
+    margin-left: auto; padding: 8px 14px;
+    background: linear-gradient(135deg, #1a1a3e, #0d0d2b);
+    border: 1px solid #7c3aed55; border-radius: 10px;
+    color: var(--gold); font-family: 'Orbitron', sans-serif; font-size: 10px;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .world-switch-btn:hover { border-color: var(--accent); box-shadow: 0 0 12px #7c3aed44; }
+
+  /* Currency */
+  .coins-display {
+    text-align: center; margin-bottom: 24px; padding: 20px 20px 16px;
+    background: #0d0d2b99; border-radius: 20px;
+    border: 1px solid #7c3aed22; backdrop-filter: blur(8px);
+    position: relative; overflow: hidden;
+  }
+  .coins-display::before {
+    content: ''; position: absolute; inset: -50%; width: 200%; height: 200%;
+    background: conic-gradient(transparent 330deg, #7c3aed0a 360deg);
+    animation: rotate 6s linear infinite; pointer-events: none;
+  }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+  .coins-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 4px; font-family: 'Orbitron', sans-serif; }
+  .coins-value {
+    font-family: 'Orbitron', sans-serif; font-size: 38px; font-weight: 900;
+    background: linear-gradient(135deg, #e0aaff, #06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1; transition: transform 0.1s;
+  }
+  .coins-value.bump { transform: scale(1.08); }
+  .coins-stats { display: flex; justify-content: center; gap: 28px; margin-top: 14px; }
+  .stat-item { text-align: center; }
+  .stat-val { font-size: 14px; font-weight: 700; color: var(--text); }
+  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-family: 'Orbitron', sans-serif; }
+
+  /* Click area */
+  .click-area { display: flex; justify-content: center; margin-bottom: 24px; position: relative; }
+
+  .orbit-ring {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 210px; height: 210px; border-radius: 50%;
+    border: 1px solid #7c3aed33;
+    animation: orbitSpin 8s linear infinite;
+    pointer-events: none;
+  }
+  .orbit-ring::before {
+    content: '★'; position: absolute; top: -6px; left: 50%;
+    transform: translateX(-50%); font-size: 10px; color: #7c3aed;
+  }
+  @keyframes orbitSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+  .orbit-ring2 {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 240px; height: 240px; border-radius: 50%;
+    border: 1px dashed #06b6d422;
+    animation: orbitSpin 14s linear infinite reverse;
+    pointer-events: none;
+  }
+  .orbit-ring2::before {
+    content: '✦'; position: absolute; top: -6px; left: 50%;
+    transform: translateX(-50%); font-size: 9px; color: #06b6d4;
+  }
+
+  .click-btn {
+    width: 168px; height: 168px; border-radius: 50%; border: none;
+    background: radial-gradient(circle at 35% 35%, #a78bfa, #7c3aed, #3b0764);
+    cursor: pointer; position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    box-shadow: 0 0 60px #7c3aed55, 0 0 0 0 #7c3aed00, 0 10px 40px #00000099;
+    animation: galPulse 3s ease-in-out infinite;
+    transition: transform 0.1s;
+  }
+  @keyframes galPulse {
+    0%,100% { box-shadow: 0 0 60px #7c3aed44, 0 0 0 0 #7c3aed00; }
+    50%      { box-shadow: 0 0 80px #7c3aed77, 0 0 0 20px #7c3aed00; }
+  }
+  .click-btn::before {
+    content: ''; position: absolute; inset: -5px; border-radius: 50%;
+    background: conic-gradient(#7c3aed, #06b6d4, #f472b6, #7c3aed);
+    z-index: -1; opacity: 0.6; animation: spinRing 4s linear infinite;
+  }
+  @keyframes spinRing { to { transform: rotate(360deg); } }
+  .click-btn::after {
+    content: ''; position: absolute; inset: -1px; border-radius: 50%;
+    background: var(--bg); z-index: -1;
+  }
+  .click-btn.clicked {
+    animation: btnHit 0.22s cubic-bezier(.36,.07,.19,.97) forwards, galPulse 3s ease-in-out 0.22s infinite;
+  }
+  @keyframes btnHit {
+    0%  { transform: scale(1); }
+    30% { transform: scale(0.88); }
+    65% { transform: scale(1.06); }
+    100%{ transform: scale(1); }
+  }
+  .click-btn-icon { font-size: 54px; pointer-events: none; filter: drop-shadow(0 0 12px #e0aaff88); }
+  .click-btn-label { font-family: 'Orbitron', sans-serif; font-size: 9px; color: #c4b5fd; letter-spacing: 2px; pointer-events: none; margin-top: 3px; }
+
+  /* Float text */
+  .float-text {
+    position: absolute; font-family: 'Orbitron', sans-serif;
+    font-size: 20px; font-weight: 900;
+    background: linear-gradient(135deg, #e0aaff, #06b6d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px #7c3aed88);
+    pointer-events: none;
+    animation: floatUp 0.9s cubic-bezier(.22,.68,0,1.2) forwards; z-index: 100;
+  }
+  @keyframes floatUp {
+    0%   { opacity: 1; transform: translateY(0) scale(0.8); }
+    30%  { opacity: 1; transform: translateY(-28px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-95px) scale(0.9); }
+  }
+
+  /* Particle */
+  .particle {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    animation: particleFly 0.7s ease-out forwards;
+  }
+  @keyframes particleFly {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+  }
+
+  /* Shockwave */
+  .shockwave {
+    position: absolute; border-radius: 50%;
+    border: 2px solid #7c3aed66;
+    width: 168px; height: 168px;
+    pointer-events: none;
+    animation: shockOut 0.5s ease-out forwards;
+  }
+  @keyframes shockOut {
+    0%   { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab {
+    flex: 1; padding: 10px 6px; border: none; border-radius: 12px;
+    background: #0d0d2b99; color: var(--muted);
+    font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+    letter-spacing: 0.5px;
+  }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 15px #7c3aed55; }
+
+  /* Shop */
+  .shop { display: flex; flex-direction: column; gap: 10px; }
+  .upgrade-card {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    background: #0d0d2b99; border-radius: 16px; border: 1px solid #ffffff08;
+    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+    backdrop-filter: blur(6px);
+  }
+  .upgrade-card:active { transform: scale(0.98); }
+  .upgrade-card.affordable:hover { border-color: var(--accent); box-shadow: 0 0 20px #7c3aed22; }
+  .upgrade-card.bought { opacity: 0.45; cursor: default; }
+  .upgrade-card.cant-afford { opacity: 0.55; cursor: not-allowed; }
+  .upgrade-rarity-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px 0 0 3px; }
+  .rarity-Common .upgrade-rarity-bar    { background: var(--common); }
+  .rarity-Rare .upgrade-rarity-bar      { background: var(--rare); }
+  .rarity-Epic .upgrade-rarity-bar      { background: var(--epic); }
+  .rarity-Legendary .upgrade-rarity-bar { background: var(--legendary); box-shadow: 0 0 10px var(--legendary); }
+  .rarity-Mythic .upgrade-rarity-bar    { background: var(--mythic); box-shadow: 0 0 12px var(--mythic); }
+  .rarity-Divine .upgrade-rarity-bar    { background: var(--divine); box-shadow: 0 0 14px var(--divine); }
+  .rarity-Legendary.upgrade-card { background: linear-gradient(135deg, #0d0d2b, #1a1400); border-color: #fbbf2422; }
+  .rarity-Mythic.upgrade-card    { background: linear-gradient(135deg, #0d0d2b, #1a0012); border-color: #f472b622; }
+  .rarity-Divine.upgrade-card    { background: linear-gradient(135deg, #0d0d2b, #001a10); border-color: #34d39922; }
+
+  .upg-icon { font-size: 32px; flex-shrink: 0; }
+  .upg-info { flex: 1; min-width: 0; }
+  .upg-name { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .upg-desc { font-size: 11px; color: var(--muted); line-height: 1.3; }
+  .upg-rarity { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'Orbitron', sans-serif; }
+  .rarity-Common    .upg-rarity { color: var(--common); }
+  .rarity-Rare      .upg-rarity { color: var(--rare); }
+  .rarity-Epic      .upg-rarity { color: var(--epic); }
+  .rarity-Legendary .upg-rarity { color: var(--legendary); }
+  .rarity-Mythic    .upg-rarity { color: var(--mythic); }
+  .rarity-Divine    .upg-rarity { color: var(--divine); }
+  .upg-cost { text-align: right; flex-shrink: 0; }
+  .upg-cost-val { font-family: 'Orbitron', sans-serif; font-size: 13px; font-weight: 700; color: var(--gold); }
+  .upg-cost-lbl { font-size: 9px; color: var(--muted); }
+  .upg-bought-badge { font-size: 18px; }
+
+  /* Achievements */
+  .achievements { display: flex; flex-direction: column; gap: 10px; }
+  .ach-card {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    background: #0d0d2b99; border-radius: 16px; border: 1px solid #ffffff08;
+    transition: all 0.2s; position: relative; overflow: hidden;
+    backdrop-filter: blur(6px);
+  }
+  .ach-card.unlocked { border-color: #7c3aed44; background: linear-gradient(135deg, #0d0d2bcc, #1a0a3acc); }
+  .ach-icon { font-size: 32px; filter: grayscale(1); transition: filter 0.3s; }
+  .ach-card.unlocked .ach-icon { filter: grayscale(0) drop-shadow(0 0 8px #e0aaff88); }
+  .ach-info { flex: 1; }
+  .ach-name { font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 3px; transition: color 0.3s; }
+  .ach-card.unlocked .ach-name { color: var(--text); }
+  .ach-desc { font-size: 11px; color: var(--muted); }
+  .ach-progress { margin-top: 6px; height: 3px; background: #ffffff11; border-radius: 3px; overflow: hidden; }
+  .ach-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width 0.4s; }
+  .ach-status { font-size: 18px; flex-shrink: 0; }
+
+  /* Stats tab */
+  .stats-panel { display: flex; flex-direction: column; gap: 10px; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card {
+    padding: 16px; background: #0d0d2b99; border-radius: 16px;
+    border: 1px solid #7c3aed22; text-align: center; backdrop-filter: blur(6px);
+  }
+  .stat-card-val { font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: 900; background: linear-gradient(135deg, #e0aaff, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-card-lbl { font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+  .prestige-card {
+    padding: 20px; background: linear-gradient(135deg, #0d0d2b, #1a0030);
+    border-radius: 16px; border: 1px solid #7c3aed44; text-align: center;
+  }
+  .prestige-title { font-family: 'Orbitron', sans-serif; font-size: 13px; color: var(--gold); margin-bottom: 8px; letter-spacing: 1px; }
+  .prestige-desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+  .prestige-btn {
+    padding: 12px 24px; background: linear-gradient(135deg, #7c3aed, #06b6d4);
+    border: none; border-radius: 12px; color: #fff;
+    font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 1px;
+  }
+  .prestige-btn:hover { opacity: 0.85; transform: scale(1.03); }
+  .prestige-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: #1a1a3e; border: 1px solid #7c3aed55; border-radius: 14px;
+    padding: 12px 20px; font-size: 13px; color: var(--text); z-index: 999;
+    opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap;
+    box-shadow: 0 8px 32px #00000088; backdrop-filter: blur(10px);
+    font-family: 'Orbitron', sans-serif; font-size: 11px;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* World label */
+  .world-label {
+    text-align: center; margin-bottom: 18px;
+    font-family: 'Orbitron', sans-serif; font-size: 10px;
+    color: var(--muted); letter-spacing: 4px; text-transform: uppercase;
+  }
+  .world-label span { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="stars-bg"><canvas id="starsCanvas"></canvas></div>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="world-badge" id="worldBadge">🌌</div>
+    <div>
+      <div class="header-name">ГАЛАКТИКА</div>
+      <div class="header-sub" id="headerSub">Исследуй космос...</div>
+    </div>
+    <button class="world-switch-btn" onclick="switchWorld()">🌍 МИР 1</button>
+  </div>
+
+  <div class="world-label">МИР <span>II</span> — ЗВЁЗДНАЯ ЭРА</div>
+
+  <!-- Currency -->
+  <div class="coins-display">
+    <div class="coins-label">⭐ Звёздная пыль</div>
+    <div class="coins-value" id="coinsVal">0</div>
+    <div class="coins-stats">
+      <div class="stat-item">
+        <div class="stat-val" id="perClickVal">1</div>
+        <div class="stat-lbl">за клик</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="autoVal">0</div>
+        <div class="stat-lbl">авто/сек</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="prestigeVal">×1</div>
+        <div class="stat-lbl">престиж</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Click button -->
+  <div class="click-area" id="clickArea">
+    <div class="orbit-ring"></div>
+    <div class="orbit-ring2"></div>
+    <button class="click-btn" id="clickBtn" onclick="handleClick(event)">
+      <span class="click-btn-icon">🪐</span>
+      <span class="click-btn-label">КЛИКАЙ</span>
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('shop',this)">🛸 Апгрейды</button>
+    <button class="tab" onclick="switchTab('achievements',this)">🏅 Ачивки</button>
+    <button class="tab" onclick="switchTab('stats',this)">📊 Данные</button>
+  </div>
+
+  <!-- Shop -->
+  <div class="shop" id="shopTab"></div>
+
+  <!-- Achievements -->
+  <div class="achievements" id="achievementsTab" style="display:none"></div>
+
+  <!-- Stats -->
+  <div class="stats-panel" id="statsTab" style="display:none"></div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STARS CANVAS =====
+const canvas = document.getElementById('starsCanvas');
+const ctx2 = canvas.getContext('2d');
+let stars = [];
+function initStars() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  stars = Array.from({length: 180}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.5 + 0.2,
+    a: Math.random(),
+    speed: Math.random() * 0.008 + 0.002,
+    twinkle: Math.random() * Math.PI * 2,
+  }));
+}
+function drawStars() {
+  ctx2.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    s.twinkle += s.speed;
+    const alpha = 0.3 + 0.5 * Math.sin(s.twinkle) * s.a;
+    ctx2.beginPath();
+    ctx2.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx2.fillStyle = `rgba(${180 + Math.random()*30}, ${180 + Math.random()*30}, 255, ${alpha})`;
+    ctx2.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+initStars();
+drawStars();
+window.addEventListener('resize', initStars);
+
+// ===== STATE =====
+const SAVE_KEY = 'galactic_world2_v1';
+let state = {
+  coins: 0,
+  perClick: 1,
+  auto: 0,
+  prestigeMulti: 1,
+  prestigeCount: 0,
+  totalClicks: 0,
+  totalEarned: 0,
+  bought: [],
+  achUnlocked: [],
+};
+
+function save() {
+  localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+}
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (d) Object.assign(state, d);
+  } catch(e) {}
+}
+load();
+
+// ===== UPGRADES =====
+const UPGRADES = [
+  { id:'u1',  icon:'🔭', name:'Телескоп',       desc:'+2 пыли за клик',          cost:25,    rarity:'Common',    click:2,  auto:0  },
+  { id:'u2',  icon:'🛸', name:'Дрон-разведчик', desc:'+3 авто/сек',              cost:80,    rarity:'Common',    click:0,  auto:3  },
+  { id:'u3',  icon:'⭐', name:'Звёздный магнит', desc:'+5 за клик',              cost:200,   rarity:'Rare',      click:5,  auto:0  },
+  { id:'u4',  icon:'🌙', name:'Лунная база',    desc:'+10 авто/сек',             cost:500,   rarity:'Rare',      click:0,  auto:10 },
+  { id:'u5',  icon:'☄️', name:'Комета-охотник', desc:'+15 за клик',             cost:1200,  rarity:'Rare',      click:15, auto:0  },
+  { id:'u6',  icon:'🪐', name:'Газовый гигант', desc:'+30 авто/сек',            cost:3000,  rarity:'Epic',      click:0,  auto:30 },
+  { id:'u7',  icon:'🌟', name:'Сверхновая',     desc:'+40 за клик',             cost:7000,  rarity:'Epic',      click:40, auto:0  },
+  { id:'u8',  icon:'🌀', name:'Чёрная дыра',    desc:'+100 авто/сек',           cost:15000, rarity:'Epic',      click:0,  auto:100},
+  { id:'u9',  icon:'🛰️', name:'Космическая станция', desc:'+80 за клик',       cost:30000, rarity:'Legendary', click:80, auto:0  },
+  { id:'u10', icon:'🌌', name:'Туманность',     desc:'+250 авто/сек',           cost:70000, rarity:'Legendary', click:0,  auto:250},
+  { id:'u11', icon:'💫', name:'Квазар',         desc:'+200 за клик',            cost:150000,rarity:'Mythic',    click:200,auto:0  },
+  { id:'u12', icon:'🔮', name:'Антиматерия',    desc:'+800 авто/сек',           cost:400000,rarity:'Mythic',    click:0,  auto:800},
+  { id:'u13', icon:'✨', name:'Сингулярность',  desc:'+1000 за клик +1000 авто',cost:1000000,rarity:'Divine',  click:1000,auto:1000},
+];
+
+// ===== ACHIEVEMENTS =====
+const ACHIEVEMENTS = [
+  { id:'a1',  icon:'👆', name:'Первый контакт',    desc:'Кликни 1 раз',           check: s => s.totalClicks >= 1,    max: 1    },
+  { id:'a2',  icon:'💪', name:'Космонавт',         desc:'Кликни 100 раз',         check: s => s.totalClicks >= 100,  max: 100  },
+  { id:'a3',  icon:'🚀', name:'Астронавт',         desc:'Кликни 1000 раз',        check: s => s.totalClicks >= 1000, max: 1000 },
+  { id:'a4',  icon:'⭐', name:'Звёздный сборщик',  desc:'Собери 500 пыли',        check: s => s.totalEarned >= 500,  max: 500  },
+  { id:'a5',  icon:'🌙', name:'Лунная экспедиция', desc:'Собери 10 000 пыли',     check: s => s.totalEarned >= 10000,max: 10000},
+  { id:'a6',  icon:'🪐', name:'Властелин планет',  desc:'Собери 100 000 пыли',    check: s => s.totalEarned >= 100000,max:100000},
+  { id:'a7',  icon:'🌌', name:'Галактический',     desc:'Собери 1 000 000 пыли',  check: s => s.totalEarned >= 1000000,max:1000000},
+  { id:'a8',  icon:'🛸', name:'Первый апгрейд',    desc:'Купи любой апгрейд',     check: s => s.bought.length >= 1,  max: 1    },
+  { id:'a9',  icon:'🔭', name:'Коллекционер',      desc:'Купи 5 апгрейдов',       check: s => s.bought.length >= 5,  max: 5    },
+  { id:'a10', icon:'🏆', name:'Полная коллекция',  desc:'Купи все апгрейды',      check: s => s.bought.length >= UPGRADES.length, max: UPGRADES.length },
+  { id:'a11', icon:'♾️', name:'Престиж I',         desc:'Сделай 1-й престиж',     check: s => s.prestigeCount >= 1,  max: 1    },
+  { id:'a12', icon:'🌠', name:'Легенда галактики', desc:'Сделай 5 престижей',     check: s => s.prestigeCount >= 5,  max: 5    },
+];
+
+// ===== PHRASES =====
+const PHRASES = [
+  'Вселенная бесконечна... как и твоя пыль ⭐',
+  'Гравитация тянет монеты к тебе 🌀',
+  'Чёрные дыры завидуют твоей скорости 💫',
+  'Квазары мигают в твою честь ✨',
+  'Ты — центр галактики 🌌',
+  'Космос твой, исследователь 🚀',
+  'Звёзды рождаются от твоих кликов ⭐',
+];
+let phraseIdx = 0;
+function cyclePhrase() {
+  document.getElementById('headerSub').textContent = PHRASES[phraseIdx++ % PHRASES.length];
+}
+setInterval(cyclePhrase, 4000);
+
+// ===== FORMAT =====
+function fmt(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+  if (n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+  return Math.floor(n).toString();
+}
+
+// ===== UI UPDATE =====
+function updateUI() {
+  document.getElementById('coinsVal').textContent = fmt(state.coins);
+  document.getElementById('perClickVal').textContent = fmt(state.perClick * state.prestigeMulti);
+  document.getElementById('autoVal').textContent = fmt(state.auto * state.prestigeMulti);
+  document.getElementById('prestigeVal').textContent = '×' + state.prestigeMulti;
+}
+
+// ===== CLICK =====
+function handleClick(e) {
+  const earned = Math.floor(state.perClick * state.prestigeMulti);
+  state.coins += earned;
+  state.totalEarned += earned;
+  state.totalClicks++;
+
+  // Animate button
+  const btn = document.getElementById('clickBtn');
+  btn.classList.remove('clicked');
+  void btn.offsetWidth;
+  btn.classList.add('clicked');
+
+  // Float text
+  const area = document.getElementById('clickArea');
+  const ft = document.createElement('div');
+  ft.className = 'float-text';
+  ft.textContent = '+' + fmt(earned);
+  const ox = (Math.random() - 0.5) * 80;
+  ft.style.cssText = `left:calc(50% + ${ox}px);top:30%;transform:translateX(-50%)`;
+  area.appendChild(ft);
+  setTimeout(() => ft.remove(), 900);
+
+  // Particles
+  for (let i = 0; i < 5; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const ang = (Math.random() * Math.PI * 2);
+    const dist = 40 + Math.random() * 60;
+    p.style.cssText = `
+      width:${3+Math.random()*4}px;height:${3+Math.random()*4}px;
+      background:${['#7c3aed','#06b6d4','#f472b6','#e0aaff'][Math.floor(Math.random()*4)]};
+      left:50%;top:50%;
+      --tx:${Math.cos(ang)*dist}px;--ty:${Math.sin(ang)*dist}px;
+    `;
+    area.appendChild(p);
+    setTimeout(() => p.remove(), 700);
+  }
+
+  // Shockwave
+  const sw = document.createElement('div');
+  sw.className = 'shockwave';
+  area.appendChild(sw);
+  setTimeout(() => sw.remove(), 500);
+
+  // Coin bump
+  const cv = document.getElementById('coinsVal');
+  cv.classList.remove('bump');
+  void cv.offsetWidth;
+  cv.classList.add('bump');
+  setTimeout(() => cv.classList.remove('bump'), 150);
+
+  // Haptic
+  if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+
+  updateUI(); checkAchievements(); save();
+}
+
+// ===== AUTO CLICKER =====
+setInterval(() => {
+  if (state.auto <= 0) return;
+  const earned = state.auto * state.prestigeMulti / 10;
+  state.coins += earned;
+  state.totalEarned += earned;
+  updateUI();
+}, 100);
+
+setInterval(save, 5000);
+
+// ===== SHOP =====
+function renderShop() {
+  const el = document.getElementById('shopTab');
+  el.innerHTML = UPGRADES.map(u => {
+    const bought = state.bought.includes(u.id);
+    const afford = !bought && state.coins >= u.cost;
+    const cls = bought ? 'bought' : afford ? 'affordable' : 'cant-afford';
+    return `
+      <div class="upgrade-card rarity-${u.rarity} ${cls}" onclick="buyUpgrade('${u.id}')">
+        <div class="upgrade-rarity-bar"></div>
+        <div class="upg-icon">${u.icon}</div>
+        <div class="upg-info">
+          <div class="upg-name">${u.name}</div>
+          <div class="upg-desc">${u.desc}</div>
+          <div class="upg-rarity">${u.rarity}</div>
+        </div>
+        <div class="upg-cost">
+          ${bought
+            ? '<div class="upg-bought-badge">✅</div>'
+            : `<div class="upg-cost-val">${fmt(u.cost)}</div><div class="upg-cost-lbl">⭐ пыли</div>`}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function buyUpgrade(id) {
+  if (state.bought.includes(id)) return;
+  const u = UPGRADES.find(x => x.id === id);
+  if (!u || state.coins < u.cost) { showToast('❌ Недостаточно звёздной пыли!'); return; }
+  state.coins -= u.cost;
+  state.bought.push(id);
+  state.perClick += u.click;
+  state.auto += u.auto;
+  if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+  showToast('🛸 Куплено: ' + u.name + '!');
+  updateUI(); renderShop(); checkAchievements(); save();
+}
+
+// ===== ACHIEVEMENTS =====
+function checkAchievements() {
+  ACHIEVEMENTS.forEach(a => {
+    if (!state.achUnlocked.includes(a.id) && a.check(state)) {
+      state.achUnlocked.push(a.id);
+      showToast('🏅 Ачивка: ' + a.name + '!');
+      save();
+    }
+  });
+  renderAchievements();
+}
+
+function renderAchievements() {
+  const el = document.getElementById('achievementsTab');
+  el.innerHTML = ACHIEVEMENTS.map(a => {
+    const done = state.achUnlocked.includes(a.id);
+    let prog = 0;
+    if (!done && a.max > 1) {
+      if (a.id === 'a2' || a.id === 'a3') prog = Math.min(state.totalClicks / a.max, 1);
+      else if (['a4','a5','a6','a7'].includes(a.id)) prog = Math.min(state.totalEarned / a.max, 1);
+      else if (a.id === 'a9' || a.id === 'a10') prog = Math.min(state.bought.length / a.max, 1);
+      else if (a.id === 'a12') prog = Math.min(state.prestigeCount / a.max, 1);
+    }
+    return `
+      <div class="ach-card ${done ? 'unlocked' : ''}">
+        <div class="ach-icon">${a.icon}</div>
+        <div class="ach-info">
+          <div class="ach-name">${a.name}</div>
+          <div class="ach-desc">${a.desc}</div>
+          ${!done && a.max > 1 ? `<div class="ach-progress"><div class="ach-progress-bar" style="width:${prog*100}%"></div></div>` : ''}
+        </div>
+        <div class="ach-status">${done ? '✅' : '🔒'}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== STATS =====
+function renderStats() {
+  const el = document.getElementById('statsTab');
+  const prestigeReq = 50000 * Math.pow(3, state.prestigeCount);
+  const canPrestige = state.totalEarned >= prestigeReq;
+  el.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-val">${fmt(state.totalClicks)}</div>
+        <div class="stat-card-lbl">Всего кликов</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${fmt(state.totalEarned)}</div>
+        <div class="stat-card-lbl">Всего собрано</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${state.bought.length}</div>
+        <div class="stat-card-lbl">Апгрейдов</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-val">${state.achUnlocked.length}/${ACHIEVEMENTS.length}</div>
+        <div class="stat-card-lbl">Ачивок</div>
+      </div>
+    </div>
+    <div class="prestige-card">
+      <div class="prestige-title">⚡ ПРЕСТИЖ ${state.prestigeCount > 0 ? 'I'.repeat(Math.min(state.prestigeCount,5)) : ''}</div>
+      <div class="prestige-desc">
+        Сбросить прогресс и получить множитель ×${state.prestigeMulti + 1}<br>
+        Нужно: <b style="color:var(--gold)">${fmt(prestigeReq)}</b> ⭐ собрано всего<br>
+        Текущий множитель: <b style="color:var(--accent2)">×${state.prestigeMulti}</b>
+      </div>
+      <button class="prestige-btn" onclick="doPrestige()" ${canPrestige ? '' : 'disabled'}>
+        ${canPrestige ? '🌟 ПРЕСТИЖ!' : `⭐ ${fmt(state.totalEarned)} / ${fmt(prestigeReq)}`}
+      </button>
+    </div>
+  `;
+}
+
+function doPrestige() {
+  const prestigeReq = 50000 * Math.pow(3, state.prestigeCount);
+  if (state.totalEarned < prestigeReq) return;
+  state.prestigeCount++;
+  state.prestigeMulti++;
+  state.coins = 0;
+  state.perClick = 1;
+  state.auto = 0;
+  state.bought = [];
+  state.totalClicks = 0;
+  state.totalEarned = 0;
+  showToast('🌟 Престиж! Теперь ×' + state.prestigeMulti);
+  if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+  updateUI(); renderShop(); renderAchievements(); renderStats(); save();
+}
+
+// ===== TABS =====
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('shopTab').style.display = name === 'shop' ? 'flex' : 'none';
+  document.getElementById('achievementsTab').style.display = name === 'achievements' ? 'flex' : 'none';
+  document.getElementById('statsTab').style.display = name === 'stats' ? 'flex' : 'none';
+  if (name === 'stats') renderStats();
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== WORLD SWITCH =====
+function switchWorld() {
+  // Redirect to world 1
+  window.location.href = 'index.html';
+}
+
+// ===== INIT =====
+updateUI();
+renderShop();
+renderAchievements();
+checkAchievements();
+</script>
+</body>
+</html>
