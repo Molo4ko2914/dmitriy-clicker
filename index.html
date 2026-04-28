@@ -1018,6 +1018,31 @@ if (window.Telegram?.WebApp) {
 // Загружаем из localStorage как запасной вариант
 try { const s = localStorage.getItem('dmitriy_clicker'); if (s) state = {...state, ...JSON.parse(s)}; } catch(e) {}
 
+// Оффлайн фарм
+function calculateOfflineProgress() {
+  const now = Date.now();
+  const lastSave = state.lastSaveTime || now;
+  const offlineTime = Math.min(now - lastSave, 3 * 60 * 60 * 1000); // макс 3 часа
+
+  if (offlineTime > 60000 && state.auto > 0) { // минимум 1 минута оффлайн
+    const offlineSeconds = Math.floor(offlineTime / 1000);
+    const offlineCoins = state.auto * offlineSeconds;
+    state.coins += offlineCoins;
+
+    const hours = Math.floor(offlineSeconds / 3600);
+    const minutes = Math.floor((offlineSeconds % 3600) / 60);
+    let timeStr = '';
+    if (hours > 0) timeStr += hours + 'ч ';
+    if (minutes > 0) timeStr += minutes + 'м';
+
+    showToast(`🎁 Оффлайн фарм: +${formatNum(offlineCoins)} за ${timeStr}`);
+  }
+
+  state.lastSaveTime = now;
+}
+
+calculateOfflineProgress();
+
 // Загружаем из Supabase — данные оттуда имеют приоритет (чтобы /reset и /addcoins работали)
 async function loadFromSupabase() {
   if (!tgUser) return;
@@ -1067,6 +1092,7 @@ async function loadFromSupabase() {
 loadFromSupabase();
 
 function save() {
+  state.lastSaveTime = Date.now();
   try { localStorage.setItem('dmitriy_clicker', JSON.stringify(state)); } catch(e) {}
   syncToSupabase();
 }
