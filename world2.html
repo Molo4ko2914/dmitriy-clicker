@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Кликер Дмитрия — АД</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Russo+One&family=Nunito:wght@400;600;700;900&display=swap');
+
+  :root {
+    --bg: #0d0000;
+    --surface: #1a0000;
+    --card: #1e0505;
+    --accent: #ff2200;
+    --gold: #ff8c00;
+    --text: #f0d0c0;
+    --muted: #886666;
+    --common: #cc8866;
+    --rare: #ff6644;
+    --epic: #cc2200;
+    --legendary: #ff4400;
+    --mythic: #ff0000;
+    --divine: #ff6600;
+    --cursed: #8800ff;
+    --cosmic: #ff0088;
+    --ember: #ff4400;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    user-select: none;
+  }
+
+  /* Animated lava background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 80%, #ff220018 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 20%, #ff440015 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 100%, #ff660022 0%, transparent 40%);
+    pointer-events: none; z-index: 0;
+    animation: hellPulse 4s ease-in-out infinite alternate;
+  }
+  @keyframes hellPulse {
+    0%   { opacity: 0.6; }
+    100% { opacity: 1; }
+  }
+
+  /* Floating embers */
+  .embers-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .ember {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, #ff6600, #ff2200);
+    box-shadow: 0 0 6px #ff4400;
+    animation: emberRise linear infinite;
+    opacity: 0;
+  }
+  @keyframes emberRise {
+    0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+    10%  { opacity: 0.8; }
+    80%  { opacity: 0.4; }
+    100% { transform: translateY(-100vh) translateX(var(--drift)) scale(0.2); opacity: 0; }
+  }
+
+  .app { position: relative; z-index: 1; max-width: 420px; margin: 0 auto; padding: 16px; }
+
+  /* === HEADER === */
+  @keyframes headerSlideIn {
+    0%   { opacity: 0; transform: translateY(-28px) scale(0.92); }
+    70%  { opacity: 1; transform: translateY(4px) scale(1.02); }
+    100% { transform: translateY(0) scale(1); }
+  }
+  .header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 20px; padding: 14px 18px;
+    background: var(--card); border-radius: 18px;
+    border: 1px solid #ff220022;
+    box-shadow: 0 0 20px #ff220011;
+    animation: headerSlideIn 0.55s cubic-bezier(.22,.68,0,1.2) both;
+  }
+
+  @keyframes avatarEntrance {
+    0%   { opacity: 0; transform: scale(0) rotate(-30deg); }
+    60%  { transform: scale(1.2) rotate(8deg); }
+    80%  { transform: scale(0.95) rotate(-4deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  }
+  @keyframes avatarFloat {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%       { transform: translateY(-5px) rotate(2deg); }
+  }
+  .dmitriy-avatar {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, #660000, #ff2200);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+    box-shadow: 0 0 20px #ff220066;
+    cursor: pointer;
+    animation: avatarEntrance 0.7s cubic-bezier(.22,.68,0,1.2) 0.1s both;
+  }
+  .dmitriy-avatar.idle { animation: avatarFloat 3s ease-in-out infinite; }
+  .dmitriy-avatar:active { transform: scale(0.88) !important; animation: none !important; }
+
+  @keyframes nameSlideIn {
+    0%   { opacity: 0; transform: translateX(-20px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes phraseSlideIn {
+    0%   { opacity: 0; transform: translateX(-14px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  .header-name {
+    font-family: 'Russo One', sans-serif; font-size: 16px;
+    color: var(--accent); letter-spacing: 1px;
+    text-shadow: 0 0 12px #ff220088;
+    animation: nameSlideIn 0.5s ease 0.35s both;
+  }
+  .header-phrase {
+    font-size: 12px; color: var(--muted); margin-top: 2px;
+    min-height: 16px; transition: opacity 0.3s;
+    animation: phraseSlideIn 0.5s ease 0.5s both;
+  }
+
+  /* === BACK BUTTON === */
+  .back-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: #1e0505; border: 1px solid #ff220033;
+    border-radius: 12px; padding: 8px 14px;
+    color: var(--muted); font-size: 12px; font-weight: 700;
+    cursor: pointer; margin-bottom: 16px;
+    font-family: 'Nunito', sans-serif;
+    transition: all 0.2s;
+  }
+  .back-btn:active { transform: scale(0.97); }
+
+  /* === COINS === */
+  .coins-display {
+    text-align: center; margin-bottom: 24px; padding: 20px;
+    background: var(--card); border-radius: 20px;
+    border: 1px solid #ff220018;
+    position: relative; overflow: hidden;
+    box-shadow: 0 0 30px #ff220011;
+  }
+  .coins-display::after {
+    content: ''; position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: conic-gradient(transparent 340deg, #ff440011 360deg);
+    animation: rotate 4s linear infinite; pointer-events: none;
+  }
+  @keyframes rotate { to { transform: rotate(360deg); } }
+  .coins-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+  .coins-value {
+    font-family: 'Russo One', sans-serif; font-size: 42px;
+    color: var(--gold); text-shadow: 0 0 30px #ff660055; line-height: 1;
+    transition: transform 0.1s;
+  }
+  .coins-value.bump { transform: scale(1.08); }
+  .coins-stats { display: flex; justify-content: center; gap: 24px; margin-top: 12px; }
+  .stat-item { text-align: center; }
+  .stat-val { font-size: 15px; font-weight: 700; color: var(--text); }
+  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* === CLICK BUTTON === */
+  .click-area { display: flex; justify-content: center; margin-bottom: 24px; position: relative; }
+  .click-btn {
+    width: 170px; height: 170px; border-radius: 50%; border: none;
+    background: radial-gradient(circle at 35% 35%, #ff6633, #cc1100, #550000);
+    cursor: pointer;
+    transition: transform 0.1s cubic-bezier(.25,.46,.45,.94), box-shadow 0.1s;
+    box-shadow: 0 0 50px #ff220077, 0 10px 40px #00000077;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    position: relative; overflow: visible;
+    animation: btnHellPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes btnHellPulse {
+    0%, 100% { box-shadow: 0 0 50px #ff220066, 0 0 0 0 #ff220044, 0 10px 40px #00000077; }
+    50%       { box-shadow: 0 0 80px #ff4400aa, 0 0 0 20px #ff220000, 0 10px 40px #00000077; }
+  }
+  .click-btn::before {
+    content: ''; position: absolute; inset: -6px; border-radius: 50%;
+    background: conic-gradient(#ff2200, #ff6600, #ff0000, #ff4400, #ff2200);
+    z-index: -1; opacity: 0.6;
+    animation: spinRing 2s linear infinite;
+  }
+  @keyframes spinRing { to { transform: rotate(360deg); } }
+  .click-btn::after {
+    content: ''; position: absolute; inset: -2px; border-radius: 50%;
+    background: var(--bg); z-index: -1;
+  }
+  .click-btn.clicked {
+    animation: btnHit 0.25s cubic-bezier(.36,.07,.19,.97) forwards, btnHellPulse 2.5s ease-in-out 0.25s infinite;
+  }
+  @keyframes btnHit {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(0.88); }
+    60%  { transform: scale(1.07); }
+    100% { transform: scale(1); }
+  }
+  .click-btn-icon { font-size: 56px; pointer-events: none; transition: transform 0.1s; }
+  .click-btn-label { font-family: 'Russo One', sans-serif; font-size: 12px; color: #ffaa88; letter-spacing: 2px; pointer-events: none; margin-top: 2px; }
+
+  /* Ripple */
+  .ripple {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, #ff440044 0%, transparent 70%);
+    pointer-events: none; transform: scale(0);
+    animation: rippleOut 0.5s ease-out forwards; z-index: 200;
+  }
+  @keyframes rippleOut { to { transform: scale(4); opacity: 0; } }
+
+  /* Shockwave */
+  .shockwave {
+    position: absolute; border-radius: 50%;
+    border: 2px solid #ff440088;
+    width: 170px; height: 170px; pointer-events: none;
+    animation: shockOut 0.5s ease-out forwards;
+  }
+  @keyframes shockOut {
+    0%   { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  /* Float text */
+  .float-text {
+    position: absolute; font-family: 'Russo One', sans-serif;
+    font-size: 22px; font-weight: 900;
+    color: var(--gold); text-shadow: 0 0 12px #ff6600aa, 0 2px 4px #000;
+    pointer-events: none;
+    animation: floatUp 0.9s cubic-bezier(.22,.68,0,1.2) forwards; z-index: 100;
+  }
+  @keyframes floatUp {
+    0%   { opacity: 1; transform: translateY(0) scale(0.8) rotate(-5deg); }
+    30%  { opacity: 1; transform: translateY(-25px) scale(1.2) rotate(3deg); }
+    100% { opacity: 0; transform: translateY(-90px) scale(0.9) rotate(-2deg); }
+  }
+
+  /* Click particles */
+  .click-particle {
+    position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    pointer-events: none; z-index: 300;
+    animation: particleFly var(--dur, 0.7s) ease-out forwards;
+  }
+  @keyframes particleFly {
+    0%   { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+  }
+
+  /* === TABS === */
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab {
+    flex: 1; padding: 10px; border: none; border-radius: 12px;
+    background: var(--card); color: var(--muted);
+    font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+  }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 15px #ff220055; }
+
+  /* === SHOP === */
+  .shop { display: flex; flex-direction: column; gap: 10px; }
+  .upgrade-card {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    background: var(--card); border-radius: 16px; border: 1px solid #ff220010;
+    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .upgrade-card:active { transform: scale(0.98); }
+  .upgrade-card.affordable:hover { border-color: var(--accent); box-shadow: 0 0 20px #ff220022; }
+  .upgrade-card.bought { opacity: 0.5; cursor: default; }
+  .upgrade-card.cant-afford { opacity: 0.6; cursor: not-allowed; }
+  .upgrade-rarity-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px 0 0 3px; }
+  .rarity-Infernal .upgrade-rarity-bar   { background: #ff4400; }
+  .rarity-Demonic .upgrade-rarity-bar    { background: #cc0000; box-shadow: 0 0 8px #cc0000; }
+  .rarity-Abyssal .upgrade-rarity-bar    { background: #880000; box-shadow: 0 0 10px #880000; }
+  .rarity-Hellforged .upgrade-rarity-bar { background: #ff2200; box-shadow: 0 0 14px #ff2200; }
+  .rarity-Cursed2 .upgrade-rarity-bar   { background: #8800ff; box-shadow: 0 0 14px #8800ff; }
+  .rarity-Satanic .upgrade-rarity-bar   { background: linear-gradient(#ff0000, #000000); box-shadow: 0 0 16px #ff0000; }
+
+  .rarity-Hellforged.upgrade-card { background: linear-gradient(135deg, #1e0505, #2a0a00); border-color: #ff220022; }
+  .rarity-Satanic.upgrade-card    { background: linear-gradient(135deg, #1a0020, #0d0000); border-color: #8800ff33; }
+  @keyframes satanicPulse { 0%,100% { box-shadow: 0 0 20px #ff000033; } 50% { box-shadow: 0 0 40px #8800ff44; } }
+  .rarity-Satanic.upgrade-card { animation: satanicPulse 2.5s ease-in-out infinite; }
+
+  .upgrade-icon { font-size: 28px; flex-shrink: 0; }
+  .upgrade-info { flex: 1; min-width: 0; }
+  .upgrade-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .upgrade-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .rarity-Infernal .upgrade-name   { color: #ff8866; }
+  .rarity-Demonic .upgrade-name    { color: #ff4422; text-shadow: 0 0 6px #cc000066; }
+  .rarity-Abyssal .upgrade-name    { color: #ff2200; text-shadow: 0 0 8px #88000066; }
+  .rarity-Hellforged .upgrade-name { color: #ff6600; text-shadow: 0 0 8px #ff440066; }
+  .rarity-Cursed2 .upgrade-name   { color: #cc44ff; text-shadow: 0 0 8px #8800ff66; }
+  .rarity-Satanic .upgrade-name   { background: linear-gradient(90deg, #ff0000, #8800ff, #ff0000); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 4px #ff0000); }
+  .upgrade-cost { font-family: 'Russo One', sans-serif; font-size: 13px; color: var(--gold); flex-shrink: 0; text-align: right; }
+  .upgrade-cost.bought-label { color: #ff4400; font-size: 11px; }
+
+  /* Purchase animation */
+  @keyframes upgradeBuyFlash {
+    0%   { box-shadow: 0 0 0 0 #ff440088; transform: scale(1); }
+    30%  { box-shadow: 0 0 0 16px #ff440044; transform: scale(1.04); }
+    60%  { box-shadow: 0 0 0 28px #ff440000; transform: scale(0.98); }
+    100% { transform: scale(1); }
+  }
+  .upgrade-card.just-bought { animation: upgradeBuyFlash 0.55s cubic-bezier(.22,.68,0,1.2) forwards !important; }
+  .upgrade-confetti {
+    position: absolute; width: 7px; height: 7px; border-radius: 2px;
+    pointer-events: none; z-index: 10;
+    animation: confettiFly var(--dur, 0.7s) ease-out forwards;
+  }
+  @keyframes confettiFly {
+    0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.3); opacity: 0; }
+  }
+
+  /* Stats */
+  .stats-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { background: var(--card); border-radius: 16px; padding: 16px; border: 1px solid #ff220011; text-align: center; }
+  .stat-card-val { font-family: 'Russo One', sans-serif; font-size: 24px; color: var(--accent); }
+  .stat-card-lbl { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e0505; border: 1px solid var(--accent); color: var(--text);
+    padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 700;
+    opacity: 0; transition: all 0.3s; z-index: 999; white-space: nowrap;
+    box-shadow: 0 4px 20px #ff220033;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .section-hidden { display: none; }
+
+  /* World unlock banner */
+  .world-locked-banner {
+    text-align: center; padding: 30px 20px;
+    background: var(--card); border-radius: 20px;
+    border: 1px solid #ff220033;
+    box-shadow: 0 0 30px #ff220011;
+  }
+  .world-locked-icon { font-size: 60px; display: block; margin-bottom: 12px; }
+  .world-locked-title {
+    font-family: 'Russo One', sans-serif; font-size: 20px;
+    color: var(--accent); letter-spacing: 2px;
+    text-shadow: 0 0 20px #ff220088; margin-bottom: 8px;
+  }
+  .world-locked-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .world-locked-progress {
+    margin-top: 16px; background: #0d0000; border-radius: 20px;
+    height: 8px; overflow: hidden;
+  }
+  .world-locked-bar {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 20px; transition: width 0.5s;
+  }
+  .world-locked-count { font-size: 11px; color: var(--muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<!-- Embers layer -->
+<div class="embers-layer" id="embers-layer"></div>
+
+<div class="app" id="app">
+  <!-- LOCKED STATE (shown if not all upgrades bought) -->
+  <div id="locked-screen">
+    <button class="back-btn" onclick="goBack()">← Вернуться в Мир 1</button>
+    <div class="world-locked-banner">
+      <span class="world-locked-icon">🔥</span>
+      <div class="world-locked-title">МИР АДА ЗАКРЫТ</div>
+      <div class="world-locked-desc">
+        Купи все апгрейды первого мира, чтобы открыть врата ада.<br><br>
+        Дмитрий ждёт тебя там... в огне. 😈
+      </div>
+      <div class="world-locked-progress">
+        <div class="world-locked-bar" id="lock-bar" style="width:0%"></div>
+      </div>
+      <div class="world-locked-count" id="lock-count">0 / 0 апгрейдов куплено</div>
+    </div>
+  </div>
+
+  <!-- MAIN GAME (hidden until unlocked) -->
+  <div id="game-screen" class="section-hidden">
+
+    <button class="back-btn" onclick="goBack()">← Мир 1</button>
+
+    <div class="header">
+      <div class="dmitriy-avatar" id="dmitriy-avatar">😈</div>
+      <div class="header-info">
+        <div class="header-name">ДМИТРИЙ ТЁМНЫЙ</div>
+        <div class="header-phrase" id="phrase">Добро пожаловать в ад! 🔥</div>
+      </div>
+    </div>
+
+    <div class="coins-display">
+      <div class="coins-label">души</div>
+      <div class="coins-value" id="coins">0</div>
+      <div class="coins-stats">
+        <div class="stat-item"><div class="stat-val" id="per-click">1</div><div class="stat-lbl">за клик</div></div>
+        <div class="stat-item"><div class="stat-val" id="auto-click">0</div><div class="stat-lbl">авто/сек</div></div>
+        <div class="stat-item"><div class="stat-val" id="total-clicks">0</div><div class="stat-lbl">кликов</div></div>
+      </div>
+    </div>
+
+    <div class="click-area" id="click-area">
+      <button class="click-btn" onclick="handleClick(event)">
+        <span class="click-btn-icon">😈</span>
+        <span class="click-btn-label">ДУША</span>
+      </button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('shop', this)">🔥 Магазин</button>
+      <button class="tab" onclick="switchTab('stats', this)">💀 Статы</button>
+    </div>
+
+    <div class="shop" id="tab-shop"></div>
+    <div class="stats-panel section-hidden" id="tab-stats"></div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── UPGRADES (Hell themed) ──
+const UPGRADES = [
+  // Infernal
+  { id: 'h_i1', name: 'Адский кофе',        icon: '🔥', desc: '+5 авто/сек',        cost: 500,          auto: 5,       multi: 0,  rarity: 'Infernal' },
+  { id: 'h_i2', name: 'Сера и пепел',        icon: '🌋', desc: '+10 авто/сек',       cost: 1500,         auto: 10,      multi: 0,  rarity: 'Infernal' },
+  { id: 'h_i3', name: 'Кулак Люцифера',      icon: '👊', desc: '+2 к клику',         cost: 2500,         auto: 0,       multi: 2,  rarity: 'Infernal' },
+  { id: 'h_i4', name: 'Огненный раб',        icon: '🧟', desc: '+20 авто/сек',       cost: 4000,         auto: 20,      multi: 0,  rarity: 'Infernal' },
+
+  // Demonic
+  { id: 'h_d1', name: 'Демон-помощник',      icon: '👿', desc: 'x3 за клик',         cost: 10000,        auto: 0,       multi: 2,  rarity: 'Demonic' },
+  { id: 'h_d2', name: 'Котёл душ',           icon: '🫕', desc: '+80 авто/сек',       cost: 20000,        auto: 80,      multi: 0,  rarity: 'Demonic' },
+  { id: 'h_d3', name: 'Рога Дмитрия',        icon: '😈', desc: 'x5 за клик',         cost: 40000,        auto: 0,       multi: 4,  rarity: 'Demonic' },
+  { id: 'h_d4', name: 'Армия демонов',       icon: '👹', desc: '+200 авто/сек',      cost: 75000,        auto: 200,     multi: 0,  rarity: 'Demonic' },
+
+  // Abyssal
+  { id: 'h_a1', name: 'Бездна',              icon: '🕳️', desc: 'x10 за клик',        cost: 200000,       auto: 0,       multi: 9,  rarity: 'Abyssal' },
+  { id: 'h_a2', name: 'Тёмный реактор',      icon: '⚫', desc: '+1000 авто/сек',     cost: 400000,       auto: 1000,    multi: 0,  rarity: 'Abyssal' },
+  { id: 'h_a3', name: 'Тень Дмитрия',        icon: '🌑', desc: 'x20 за клик',        cost: 800000,       auto: 0,       multi: 19, rarity: 'Abyssal' },
+  { id: 'h_a4', name: 'Адский завод',        icon: '⚙️', desc: '+5000 авто/сек',     cost: 2000000,      auto: 5000,    multi: 0,  rarity: 'Abyssal' },
+
+  // Hellforged
+  { id: 'h_hf1', name: 'Кузница Ада',        icon: '🔨', desc: 'x50 за клик',        cost: 8000000,      auto: 0,       multi: 49, rarity: 'Hellforged' },
+  { id: 'h_hf2', name: 'Молот Сатаны',       icon: '⚡', desc: '+20000 авто/сек',    cost: 20000000,     auto: 20000,   multi: 0,  rarity: 'Hellforged' },
+  { id: 'h_hf3', name: 'Тёмная звезда',      icon: '💫', desc: 'x100 за клик',       cost: 60000000,     auto: 0,       multi: 99, rarity: 'Hellforged' },
+
+  // Cursed2
+  { id: 'h_c1',  name: 'Проклятие Вечности', icon: '☠️', desc: '+100000 авто/сек',   cost: 200000000,    auto: 100000,  multi: 0,  rarity: 'Cursed2' },
+  { id: 'h_c2',  name: 'Печать Дьявола',     icon: '🩸', desc: 'x300 за клик',       cost: 600000000,    auto: 0,       multi: 299, rarity: 'Cursed2' },
+
+  // Satanic — финальный босс
+  { id: 'h_s1',  name: 'ДМИТРИЙ — БОГ АДА', icon: '👑', desc: 'x666 + 1M авто/сек', cost: 5000000000,   auto: 1000000, multi: 665, rarity: 'Satanic' },
+];
+
+const HELL_PHRASES = [
+  'Тьма принимает тебя! 🔥',
+  'Дмитрий доволен... демонически! 😈',
+  'Ещё душ! БОЛЬШЕ ДУШ!',
+  'Ад одобряет! 👹',
+  'Врата открываются... 🌋',
+  'Сатана кивает! 🤘',
+  'Тьма сгущается! ☠️',
+  'Дмитрий тёмный впечатлён! 🩸',
+];
+
+// World 1 upgrade IDs (to check unlock condition)
+const WORLD1_UPGRADE_IDS = ['c1','c2','c3','c4','r1','r2','r3','r4','r5','e1','e2','e3','e4','e5','l1','l2','l3','l4','m1','m2','m3','m4','m5','d1','d2','d3','d4','cu1','cu2','cu3','cos1'];
+
+// State key for world 2
+const SAVE_KEY = 'dmitriy_hell';
+
+let state = { coins: 0, perClick: 1, auto: 0, totalClicks: 0, bought: [] };
+
+// Load world 1 data to check unlock
+function getWorld1State() {
+  try { return JSON.parse(localStorage.getItem('dmitriy_clicker') || '{}'); } catch(e) { return {}; }
+}
+
+function isUnlocked() {
+  const w1 = getWorld1State();
+  const w1bought = w1.bought || [];
+  return WORLD1_UPGRADE_IDS.every(id => w1bought.includes(id));
+}
+
+function getUnlockProgress() {
+  const w1 = getWorld1State();
+  const w1bought = w1.bought || [];
+  const count = WORLD1_UPGRADE_IDS.filter(id => w1bought.includes(id)).length;
+  return { count, total: WORLD1_UPGRADE_IDS.length };
+}
+
+// Load hell save
+try { const s = localStorage.getItem(SAVE_KEY); if (s) state = {...state, ...JSON.parse(s)}; } catch(e) {}
+
+function save() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// ── Init screen ──
+function initScreen() {
+  if (isUnlocked()) {
+    document.getElementById('locked-screen').style.display = 'none';
+    document.getElementById('game-screen').classList.remove('section-hidden');
+    updateUI(); renderShop();
+    setTimeout(() => {
+      const av = document.getElementById('dmitriy-avatar');
+      if (av) av.classList.add('idle');
+    }, 1000);
+  } else {
+    const { count, total } = getUnlockProgress();
+    const pct = Math.round(count / total * 100);
+    document.getElementById('lock-bar').style.width = pct + '%';
+    document.getElementById('lock-count').textContent = `${count} / ${total} апгрейдов куплено`;
+  }
+}
+initScreen();
+
+// ── Embers ──
+(function spawnEmbers() {
+  const layer = document.getElementById('embers-layer');
+  for (let i = 0; i < 18; i++) {
+    const e = document.createElement('div');
+    e.className = 'ember';
+    const size = 2 + Math.random() * 5;
+    e.style.width = e.style.height = size + 'px';
+    e.style.left = Math.random() * 100 + 'vw';
+    e.style.bottom = '-10px';
+    e.style.setProperty('--drift', (Math.random() * 80 - 40) + 'px');
+    const dur = 4 + Math.random() * 6;
+    e.style.animationDuration = dur + 's';
+    e.style.animationDelay = (Math.random() * dur) + 's';
+    layer.appendChild(e);
+  }
+})();
+
+function goBack() {
+  window.location.href = 'index.html';
+}
+
+function formatNum(n) {
+  if (n >= 1000000000) return (n/1000000000).toFixed(1)+'B';
+  if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+  if (n >= 1000) return (n/1000).toFixed(1)+'K';
+  return Math.floor(n).toString();
+}
+
+function updateUI() {
+  document.getElementById('coins').textContent = formatNum(state.coins);
+  document.getElementById('per-click').textContent = formatNum(state.perClick);
+  document.getElementById('auto-click').textContent = formatNum(state.auto);
+  document.getElementById('total-clicks').textContent = formatNum(state.totalClicks);
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-shop').classList.toggle('section-hidden', name !== 'shop');
+  document.getElementById('tab-stats').classList.toggle('section-hidden', name !== 'stats');
+  if (name === 'stats') renderStats();
+}
+
+function renderStats() {
+  const el = document.getElementById('tab-stats');
+  el.innerHTML = `
+    <div class="stat-card"><div class="stat-card-val">${formatNum(state.coins)}</div><div class="stat-card-lbl">Душ</div></div>
+    <div class="stat-card"><div class="stat-card-val">${formatNum(state.perClick)}</div><div class="stat-card-lbl">За клик</div></div>
+    <div class="stat-card"><div class="stat-card-val">${formatNum(state.auto)}</div><div class="stat-card-lbl">Авто/сек</div></div>
+    <div class="stat-card"><div class="stat-card-val">${formatNum(state.totalClicks)}</div><div class="stat-card-lbl">Кликов</div></div>
+    <div class="stat-card"><div class="stat-card-val">${state.bought.length}</div><div class="stat-card-lbl">Апгрейдов</div></div>
+    <div class="stat-card"><div class="stat-card-val">${UPGRADES.length - state.bought.length}</div><div class="stat-card-lbl">Осталось</div></div>
+  `;
+}
+
+function renderShop() {
+  const el = document.getElementById('tab-shop');
+  el.innerHTML = '';
+  for (const upg of UPGRADES) {
+    const bought = state.bought.includes(upg.id);
+    const canAfford = state.coins >= upg.cost;
+    const div = document.createElement('div');
+    div.className = `upgrade-card rarity-${upg.rarity} ${bought?'bought':canAfford?'affordable':'cant-afford'}`;
+    div.innerHTML = `<div class="upgrade-rarity-bar"></div>
+      <div class="upgrade-icon">${upg.icon}</div>
+      <div class="upgrade-info">
+        <div class="upgrade-name">${upg.name}</div>
+        <div class="upgrade-desc">${upg.desc}</div>
+      </div>
+      <div class="upgrade-cost ${bought?'bought-label':''}">${bought?'🔥 Куплено':'👹 '+formatNum(upg.cost)}</div>`;
+    if (!bought) div.onclick = () => buyUpgrade(upg.id);
+    el.appendChild(div);
+  }
+}
+
+function buyUpgrade(id) {
+  const upg = UPGRADES.find(u => u.id === id);
+  if (!upg || state.bought.includes(id)) return;
+  if (state.coins < upg.cost) { showToast('😢 Не хватает душ!'); return; }
+  state.coins -= upg.cost;
+  state.bought.push(id);
+  state.auto += upg.auto;
+  state.perClick += upg.multi;
+  setPhrase('Дмитрий тёмный одобряет! 😈');
+  showToast('🔥 ' + upg.name + ' куплено!');
+  updateUI(); renderShop(); save();
+
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.upgrade-card.bought');
+    const card = Array.from(cards).find(c => c.querySelector('.upgrade-name')?.textContent === upg.name);
+    if (card) {
+      card.classList.add('just-bought');
+      const colors = ['#ff2200','#ff6600','#ff0000','#ff4400','#8800ff','#ff8800'];
+      for (let i = 0; i < 14; i++) {
+        const c = document.createElement('div');
+        c.className = 'upgrade-confetti';
+        const angle = (Math.PI * 2 / 14) * i + (Math.random() - 0.5) * 0.4;
+        const dist = 40 + Math.random() * 70;
+        c.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+        c.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+        c.style.setProperty('--rot', (Math.random() * 360) + 'deg');
+        c.style.setProperty('--dur', (0.5 + Math.random() * 0.4) + 's');
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.left = (card.offsetWidth / 2) + 'px';
+        c.style.top = (card.offsetHeight / 2) + 'px';
+        card.appendChild(c);
+        setTimeout(() => c.remove(), 1000);
+      }
+      setTimeout(() => card.classList.remove('just-bought'), 600);
+    }
+  }, 50);
+
+  if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+}
+
+let lastClickTime = 0;
+function handleClick(e) {
+  const now = Date.now();
+  const interval = now - lastClickTime;
+  lastClickTime = now;
+  if (interval < 50 && interval > 0) return;
+
+  state.coins += state.perClick;
+  state.totalClicks++;
+
+  const el = document.getElementById('coins');
+  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+  setTimeout(() => el.classList.remove('bump'), 100);
+
+  spawnFloat(e, '+' + formatNum(state.perClick));
+  spawnClickFX(e);
+
+  if (state.totalClicks % 10 === 0) setPhrase(HELL_PHRASES[Math.floor(Math.random() * HELL_PHRASES.length)]);
+  updateUI(); renderShop();
+  if (state.totalClicks % 5 === 0) save();
+  if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+}
+
+function spawnFloat(e, text) {
+  const area = document.getElementById('click-area');
+  const rect = area.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = 'float-text'; el.textContent = text;
+  el.style.left = ((e.clientX||rect.left+rect.width/2)-rect.left-20)+'px';
+  el.style.top = ((e.clientY||rect.top+rect.height/2)-rect.top-20)+'px';
+  area.appendChild(el);
+  setTimeout(() => el.remove(), 900);
+}
+
+function spawnClickFX(e) {
+  const area = document.getElementById('click-area');
+  const rect = area.getBoundingClientRect();
+  const cx = (e.clientX || rect.left + rect.width/2) - rect.left;
+  const cy = (e.clientY || rect.top + rect.height/2) - rect.top;
+
+  const rip = document.createElement('div');
+  rip.className = 'ripple';
+  rip.style.width = rip.style.height = '60px';
+  rip.style.left = (cx - 30) + 'px';
+  rip.style.top = (cy - 30) + 'px';
+  area.appendChild(rip);
+  setTimeout(() => rip.remove(), 500);
+
+  const sw = document.createElement('div');
+  sw.className = 'shockwave';
+  sw.style.left = (rect.width/2 - 85) + 'px';
+  sw.style.top = (rect.height/2 - 85) + 'px';
+  area.appendChild(sw);
+  setTimeout(() => sw.remove(), 500);
+
+  const colors = ['#ff2200','#ff6600','#ff4400','#ffffff','#8800ff','#ff0000'];
+  const count = 8 + Math.floor(Math.random() * 5);
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'click-particle';
+    const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.5;
+    const dist = 50 + Math.random() * 60;
+    p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+    p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+    p.style.setProperty('--dur', (0.5 + Math.random() * 0.35) + 's');
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.left = (rect.width / 2 - 4) + 'px';
+    p.style.top = (rect.height / 2 - 4) + 'px';
+    area.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+}
+
+function setPhrase(text) {
+  const el = document.getElementById('phrase');
+  if (!el) return;
+  el.style.opacity = 0;
+  setTimeout(() => { el.textContent = text; el.style.opacity = 1; }, 150);
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+setInterval(() => { if (state.auto > 0) { state.coins += state.auto; updateUI(); } }, 1000);
+setInterval(save, 30000);
+</script>
+</body>
+</html>
