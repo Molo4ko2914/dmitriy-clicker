@@ -9,95 +9,379 @@
   @import url('https://fonts.googleapis.com/css2?family=Russo+One&family=Nunito:wght@400;600;700;900&display=swap');
 
   :root {
-    --bg: #0f0f1a;
-    --surface: #1a1a2e;
-    --card: #16213e;
-    --accent: #e94560;
-    --gold: #ffd700;
-    --text: #eaeaea;
-    --muted: #888;
-    --common: #aaaaaa;
-    --rare: #4dabf7;
-    --epic: #cc5de8;
-    --legendary: #ffd43b;
-    --mythic: #ff6b35;
-    --divine: #00f5ff;
-    --cursed: #39ff14;
-    --cosmic: #ff1493;
+    --bg-start: #0a0e27;
+    --bg-end: #1a1f3a;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --accent-primary: #6366f1;
+    --accent-secondary: #8b5cf6;
+    --accent-glow: #a78bfa;
+    --gold: #fbbf24;
+    --gold-glow: #fcd34d;
+    --text: #f3f4f6;
+    --text-muted: #9ca3af;
+    --common: #94a3b8;
+    --rare: #60a5fa;
+    --epic: #a78bfa;
+    --legendary: #fbbf24;
+    --mythic: #f97316;
+    --divine: #06b6d4;
+    --cursed: #84cc16;
+    --cosmic: #ec4899;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   body {
-    background: var(--bg);
+    background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
     color: var(--text);
     font-family: 'Nunito', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
     user-select: none;
+    position: relative;
   }
 
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at 20% 50%, #1a0a2e44 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 20%, #0f346044 0%, transparent 60%);
+    background:
+      radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.05) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
+    animation: bgFloat 20s ease-in-out infinite;
   }
 
-  .app { position: relative; z-index: 1; max-width: 420px; margin: 0 auto; padding: 16px; }
+  @keyframes bgFloat {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+  }
 
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Glassmorphism Header */
   .header {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 20px; padding: 14px 18px;
-    background: var(--card); border-radius: 18px; border: 1px solid #ffffff10;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding: 18px 22px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
   }
-  .dmitriy-avatar {
-    width: 52px; height: 52px;
-    background: linear-gradient(135deg, var(--accent), #ff8c42);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 26px; flex-shrink: 0; box-shadow: 0 0 20px #e9456044;
+  .header:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--shadow-glow);
   }
-  .header-name { font-family: 'Russo One', sans-serif; font-size: 16px; color: var(--accent); letter-spacing: 1px; }
-  .header-phrase { font-size: 12px; color: var(--muted); margin-top: 2px; min-height: 16px; transition: opacity 0.3s; }
 
+  .dmitriy-avatar {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.4), var(--shadow-sm);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .dmitriy-avatar:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.6), var(--shadow-md);
+  }
+  .dmitriy-avatar:active {
+    transform: scale(0.95);
+  }
+
+  .header-info {
+    flex: 1;
+  }
+  .header-name {
+    font-family: 'Russo One', sans-serif;
+    font-size: 18px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+  .header-phrase {
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: opacity 0.3s;
+  }
+
+  /* Coins Display with Glassmorphism */
   .coins-display {
-    text-align: center; margin-bottom: 24px; padding: 20px;
-    background: var(--card); border-radius: 20px; border: 1px solid #ffffff10;
-    position: relative; overflow: hidden;
+    text-align: center;
+    margin-bottom: 28px;
+    padding: 28px 24px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 28px;
+    border: 1px solid var(--glass-border);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  .coins-display::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, transparent 50%);
+    pointer-events: none;
   }
   .coins-display::after {
-    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-    background: conic-gradient(transparent 340deg, #ffd70011 360deg);
-    animation: rotate 4s linear infinite; pointer-events: none;
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      transparent 0deg,
+      rgba(251, 191, 36, 0.15) 90deg,
+      transparent 180deg
+    );
+    animation: rotate 6s linear infinite;
+    pointer-events: none;
   }
-  @keyframes rotate { to { transform: rotate(360deg); } }
+  @keyframes rotate {
+    to { transform: rotate(360deg); }
+  }
 
-  .coins-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+  .coins-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
   .coins-value {
-    font-family: 'Russo One', sans-serif; font-size: 42px;
-    color: var(--gold); text-shadow: 0 0 30px #ffd70055; line-height: 1; transition: transform 0.1s;
+    font-family: 'Russo One', sans-serif;
+    font-size: 48px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.5));
+    line-height: 1;
+    transition: transform 0.15s ease;
+    position: relative;
+    z-index: 1;
   }
-  .coins-value.bump { transform: scale(1.08); }
-  .coins-stats { display: flex; justify-content: center; gap: 24px; margin-top: 12px; }
-  .stat-item { text-align: center; }
-  .stat-val { font-size: 15px; font-weight: 700; color: var(--text); }
-  .stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .coins-value.bump {
+    transform: scale(1.1);
+  }
+  .coins-stats {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-val {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .stat-lbl {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+  }
 
-  .click-area { display: flex; justify-content: center; margin-bottom: 24px; position: relative; }
-  .click-btn {
-    width: 170px; height: 170px; border-radius: 50%; border: none;
-    background: radial-gradient(circle at 35% 35%, #ff8585, var(--accent), #a0231b);
-    cursor: pointer; transition: transform 0.1s cubic-bezier(.25,.46,.45,.94), box-shadow 0.1s;
-    box-shadow: 0 0 0 0 #e9456000, 0 0 50px #e9456077, 0 10px 40px #00000077;
-    display: flex; align-items: center; justify-content: center; flex-direction: column;
-    position: relative; overflow: visible;
-    animation: btnPulse 2.5s ease-in-out infinite;
+  /* Click Button - Ultra Modern Design */
+  .click-area {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 28px;
+    position: relative;
   }
-  @keyframes btnPulse {
-    0%, 100% { box-shadow: 0 0 50px #e9456066, 0 0 0 0 #e9456044, 0 10px 40px #00000077; }
+  .click-btn {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow:
+      0 0 80px rgba(99, 102, 241, 0.5),
+      0 15px 50px rgba(0, 0, 0, 0.6),
+      inset 0 2px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: relative;
+    overflow: visible;
+    animation: btnFloat 4s ease-in-out infinite;
+  }
+  @keyframes btnFloat {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+      box-shadow:
+        0 0 80px rgba(99, 102, 241, 0.5),
+        0 15px 50px rgba(0, 0, 0, 0.6),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+    }
+    50% {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow:
+        0 0 100px rgba(99, 102, 241, 0.7),
+        0 20px 60px rgba(0, 0, 0, 0.7),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  /* Rotating gradient ring */
+  .click-btn::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: linear-gradient(
+      45deg,
+      var(--accent-primary),
+      var(--accent-glow),
+      var(--accent-secondary),
+      var(--gold),
+      var(--accent-primary)
+    );
+    background-size: 400% 400%;
+    z-index: -1;
+    opacity: 0.8;
+    animation: gradientSpin 4s linear infinite;
+    filter: blur(12px);
+  }
+  @keyframes gradientSpin {
+    0% {
+      background-position: 0% 50%;
+      transform: rotate(0deg);
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Pulsing outer glow */
+  .click-btn::after {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
+    z-index: -2;
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+  @keyframes pulseGlow {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 0.8;
+    }
+  }
+
+  .click-btn:hover {
+    transform: scale(1.08);
+    animation: none;
+  }
+  .click-btn:active {
+    transform: scale(0.92);
+    box-shadow:
+      0 0 60px rgba(99, 102, 241, 0.7),
+      0 8px 30px rgba(0, 0, 0, 0.7),
+      inset 0 2px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+  }
+  .click-btn.clicked {
+    animation: btnHit 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes btnHit {
+    0% {
+      transform: scale(1);
+    }
+    25% {
+      transform: scale(0.85) rotate(-5deg);
+    }
+    50% {
+      transform: scale(1.15) rotate(5deg);
+    }
+    75% {
+      transform: scale(0.95) rotate(-2deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+    }
+  }
+  .click-btn-icon {
+    font-size: 72px;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+    animation: iconBounce 2s ease-in-out infinite;
+  }
+  @keyframes iconBounce {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-5px) scale(1.05);
+    }
+  }
+  .click-btn-label {
+    font-family: 'Russo One', sans-serif;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 3px;
+    pointer-events: none;
+    margin-top: 8px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
     50%       { box-shadow: 0 0 70px #e9456099, 0 0 0 18px #e9456000, 0 10px 40px #00000077; }
   }
   .click-btn::before {
@@ -160,25 +444,186 @@
     100% { opacity: 0; transform: translateY(-90px) scale(0.9) rotate(-2deg); }
   }
 
-  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  /* Modern Tabs */
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 6px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 18px;
+    border: 1px solid var(--glass-border);
+  }
   .tab {
-    flex: 1; padding: 10px; border: none; border-radius: 12px;
-    background: var(--card); color: var(--muted);
-    font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s; border: 1px solid transparent;
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  .tab:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .tab.active {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+  }
+
+  /* Shop - Modern Cards */
+  .shop {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
   }
   .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 15px #e9456055; }
 
   .shop { display: flex; flex-direction: column; gap: 10px; }
   .upgrade-card {
-    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
-    background: var(--card); border-radius: 16px; border: 1px solid #ffffff08;
-    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
   }
-  .upgrade-card:active { transform: scale(0.98); }
-  .upgrade-card.affordable:hover { border-color: var(--accent); box-shadow: 0 0 20px #e9456022; }
-  .upgrade-card.bought { opacity: 0.5; cursor: default; }
-  .upgrade-card.cant-afford { opacity: 0.6; cursor: not-allowed; }
+  .upgrade-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .upgrade-card:hover::before {
+    opacity: 1;
+  }
+  .upgrade-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  .upgrade-card:active {
+    transform: scale(0.98);
+  }
+  .upgrade-card.affordable:hover {
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+  }
+  .upgrade-card.bought {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .upgrade-card.bought:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+  }
+  .upgrade-card.cant-afford {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .upgrade-card.cant-afford:hover {
+    transform: none;
+  }
+
+  /* Purchase animation */
+  @keyframes upgradeBuyFlash {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 var(--accent);
+    }
+    20% {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 10px transparent;
+    }
+    40% {
+      transform: scale(0.95);
+      box-shadow: 0 0 30px var(--accent);
+    }
+    60% {
+      transform: scale(1.02);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+  @keyframes upgradeGlow {
+    0%, 100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.5);
+    }
+  }
+  .upgrade-card.just-bought {
+    animation: upgradeBuyFlash 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), upgradeGlow 0.6s ease-in-out;
+  }
+
+  /* Purchase particles */
+  .upgrade-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 100;
+    animation: particleBurst var(--dur, 0.8s) ease-out forwards;
+  }
+  @keyframes particleBurst {
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(var(--tx), var(--ty)) scale(0);
+      opacity: 0;
+    }
+  }
+
+  /* Shine effect on purchase */
+  .upgrade-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+  .upgrade-card.just-bought::after {
+    animation: shine 0.6s ease-out;
+  }
+  @keyframes shine {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
   .upgrade-rarity-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 3px 0 0 3px; }
   .rarity-Common .upgrade-rarity-bar { background: var(--common); }
   .rarity-Rare .upgrade-rarity-bar { background: var(--rare); }
@@ -316,6 +761,116 @@
     transform: translateY(0);
   }
 
+  /* World 2 requirements modal */
+  .world2-modal {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .world2-modal.show { opacity: 1; pointer-events: all; }
+  .world2-modal-content {
+    background: linear-gradient(135deg, #1a0a0a, #2a0000);
+    border: 2px solid #ff2200;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 90%;
+    width: 340px;
+    text-align: center;
+    box-shadow: 0 0 50px #ff220044;
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(.22,.68,0,1.2);
+  }
+  .world2-modal.show .world2-modal-content { transform: scale(1); }
+  .world2-modal-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .world2-modal-title {
+    font-family: 'Russo One', sans-serif;
+    font-size: 22px;
+    color: #ff2200;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px #ff220088;
+  }
+  .world2-requirement {
+    background: #16213e;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .world2-requirement-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .world2-requirement-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+  .world2-requirement-info {
+    flex: 1;
+    text-align: left;
+  }
+  .world2-requirement-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .world2-requirement-value {
+    font-family: 'Russo One', sans-serif;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .world2-requirement-status {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .world2-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #0f0f1a;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .world2-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff2200, #ff6600);
+    border-radius: 10px;
+    transition: width 0.3s;
+  }
+  .world2-progress-fill.complete {
+    background: linear-gradient(90deg, #00cc00, #00ff00);
+  }
+  .world2-modal-btn {
+    background: linear-gradient(135deg, #ff2200, #ff6600);
+    border: none;
+    border-radius: 12px;
+    padding: 14px 32px;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px #ff220044;
+    transition: all 0.2s;
+    margin-top: 12px;
+  }
+  .world2-modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px #ff220066;
+  }
+  .world2-modal-btn:active {
+    transform: translateY(0);
+  }
+  .world2-modal-btn.unlocked {
+    background: linear-gradient(135deg, #00cc00, #00ff00);
+  }
+
   .section-hidden { display: none; }
 
   /* ADMIN PANEL */
@@ -408,58 +963,257 @@
 
   /* WORLD 2 BUTTON */
   .world2-btn {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    border-radius: 50%;
     display: flex;
-    position: fixed; right: 0; top: calc(50% - 80px); transform: translateY(-50%);
-    z-index: 500; cursor: pointer;
-    flex-direction: column; align-items: center;
-    background: linear-gradient(180deg, #2a0000, #1a0000);
-    border: 1px solid #ff220033; border-right: none;
-    border-radius: 14px 0 0 14px;
-    padding: 10px 8px; gap: 6px;
-    box-shadow: -4px 0 24px #ff220033;
-    transition: transform 0.2s, background 0.2s;
-    animation: hellGlow 1.5s ease-in-out infinite;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    border: 2px solid rgba(220, 38, 38, 0.3);
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.4), var(--shadow-sm);
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  .world2-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 40px rgba(220, 38, 38, 0.6), var(--shadow-md);
+  }
+  .world2-btn:active {
+    transform: scale(0.95);
   }
   .world2-btn.locked {
-    background: linear-gradient(180deg, #1a1a1a, #0d0d0d);
-    border-color: #44444433;
-    box-shadow: -4px 0 24px #44444433;
-    animation: none;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-color: var(--glass-border);
+    box-shadow: var(--shadow-sm);
     cursor: not-allowed;
   }
-  .world2-btn:active { transform: translateY(-50%) scale(0.95); }
-  .world2-btn.locked:active { transform: translateY(-50%); }
-  @keyframes hellGlow {
-    0%,100% { box-shadow: -4px 0 24px #ff220033; }
-    50%      { box-shadow: -4px 0 40px #ff220099; }
+  .world2-btn.locked:hover {
+    transform: scale(1);
   }
-  .world2-icon {
-    width: 40px; height: 40px; border-radius: 10px;
-    background: linear-gradient(135deg, #330000, #1a0000);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; border: 1px solid #ff220044;
-    box-shadow: 0 0 12px #ff220044;
+  .world2-progress-badge {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border: 2px solid var(--bg-start);
+    border-radius: 12px;
+    padding: 2px 7px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 9px;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   }
-  .world2-btn.locked .world2-icon {
-    background: linear-gradient(135deg, #222222, #111111);
-    border-color: #44444444;
-    box-shadow: 0 0 12px #44444444;
+  .world2-btn.locked .world2-progress-badge {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--text-muted);
   }
-  .world2-label {
-    font-family: 'Russo One', sans-serif; font-size: 8px; color: #ff220088;
-    letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: mixed;
-    transform: rotate(180deg);
+
+  /* Customization Button */
+  .customize-btn {
+    width: 56px;
+    height: 56px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    cursor: pointer;
+    border: 2px solid var(--glass-border);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    position: relative;
   }
-  .world2-btn.locked .world2-label {
-    color: #666666;
+  .customize-btn:hover {
+    transform: scale(1.08);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-primary);
   }
-  .world2-progress {
-    font-family: 'Russo One', sans-serif; font-size: 7px; color: #ff220066;
-    letter-spacing: 0.5px; writing-mode: vertical-rl; text-orientation: mixed;
-    transform: rotate(180deg); margin-top: 4px;
+  .customize-btn:active {
+    transform: scale(0.95);
   }
-  .world2-btn.locked .world2-progress {
-    color: #555555;
+
+  /* Customization Modal */
+  .customize-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .customize-modal.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .customize-modal-content {
+    background: var(--glass-bg);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 2px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 28px 24px;
+    max-width: 90%;
+    width: 360px;
+    box-shadow: var(--shadow-lg);
+    transform: scale(0.9);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .customize-modal.show .customize-modal-content {
+    transform: scale(1);
+  }
+  .customize-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .customize-modal-title {
+    font-family: 'Russo One', sans-serif;
+    font-size: 20px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-glow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1.5px;
+  }
+  .customize-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .customize-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+  }
+  .customize-section {
+    margin-bottom: 24px;
+  }
+  .customize-section-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .customize-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+  }
+  .customize-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .customize-tab.active {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+  }
+  .customize-tab-content {
+    display: none;
+  }
+  .customize-tab-content.active {
+    display: block;
+  }
+  .bg-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .bg-option {
+    aspect-ratio: 1;
+    border-radius: 16px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .bg-option:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  .bg-option.active {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  }
+  .bg-option::after {
+    content: '✓';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    background: var(--accent-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .bg-option.active::after {
+    opacity: 1;
+  }
+  .bg-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .bg-default {
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+  }
+  .bg-purple {
+    background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 100%);
+  }
+  .bg-blue {
+    background: linear-gradient(135deg, #0a1e3a 0%, #1b3a5f 100%);
+  }
+  .bg-green {
+    background: linear-gradient(135deg, #0a2e1a 0%, #1b4e2d 100%);
+  }
+  .bg-red {
+    background: linear-gradient(135deg, #2e0a0a 0%, #4e1b1b 100%);
+  }
+  .bg-gold {
+    background: linear-gradient(135deg, #2e1f0a 0%, #4e3a1b 100%);
   }
 
   /* TETRIS OVERLAY */
@@ -710,11 +1464,16 @@
 <body>
 <div class="app">
   <div class="header">
+    <div class="world2-btn locked" id="world2-btn" onclick="tryGoToWorld2()">
+      <span id="world2-icon">🔒</span>
+      <div class="world2-progress-badge" id="world2-progress">0/31</div>
+    </div>
     <div class="dmitriy-avatar" onclick="easterEgg()" id="dmitriy-avatar">🧔</div>
     <div class="header-info">
       <div class="header-name">ДМИТРИЙ</div>
       <div class="header-phrase" id="phrase">Привет! Начнём кликать? 💪</div>
     </div>
+    <div class="customize-btn" onclick="openCustomize()">🎨</div>
   </div>
 
   <div class="coins-display">
@@ -762,17 +1521,103 @@
   </div>
 </div>
 
+<!-- World 2 requirements modal -->
+<div class="world2-modal" id="world2-modal">
+  <div class="world2-modal-content">
+    <span class="world2-modal-icon">🔥</span>
+    <div class="world2-modal-title">МИР АДА</div>
+
+    <div class="world2-requirement">
+      <div class="world2-requirement-header">
+        <div class="world2-requirement-icon">🛒</div>
+        <div class="world2-requirement-info">
+          <div class="world2-requirement-label">Все апгрейды</div>
+          <div class="world2-requirement-value" id="w2-upgrades-value">0 / 31</div>
+        </div>
+        <div class="world2-requirement-status" id="w2-upgrades-status">❌</div>
+      </div>
+      <div class="world2-progress-bar">
+        <div class="world2-progress-fill" id="w2-upgrades-bar" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <div class="world2-requirement">
+      <div class="world2-requirement-header">
+        <div class="world2-requirement-icon">💰</div>
+        <div class="world2-requirement-info">
+          <div class="world2-requirement-label">Накопить монет</div>
+          <div class="world2-requirement-value" id="w2-coins-value">0 / 75B</div>
+        </div>
+        <div class="world2-requirement-status" id="w2-coins-status">❌</div>
+      </div>
+      <div class="world2-progress-bar">
+        <div class="world2-progress-fill" id="w2-coins-bar" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <button class="world2-modal-btn" id="world2-modal-btn" onclick="closeWorld2Modal()">ЗАКРЫТЬ</button>
+  </div>
+</div>
+
+<!-- Customization Modal -->
+<div class="customize-modal" id="customize-modal">
+  <div class="customize-modal-content">
+    <div class="customize-modal-header">
+      <div class="customize-modal-title">КАСТОМИЗАЦИЯ</div>
+      <button class="customize-close" onclick="closeCustomize()">✕</button>
+    </div>
+
+    <div class="customize-tabs">
+      <button class="customize-tab active" onclick="switchCustomizeTab('themes', this)">Темы</button>
+      <button class="customize-tab" onclick="switchCustomizeTab('memes', this)">Мемы</button>
+    </div>
+
+    <div class="customize-tab-content active" id="customize-themes">
+      <div class="customize-section">
+        <div class="customize-section-title">Фон</div>
+        <div class="bg-grid">
+          <div class="bg-option bg-default active" data-bg="default" onclick="changeBg('default')"></div>
+          <div class="bg-option bg-purple" data-bg="purple" onclick="changeBg('purple')"></div>
+          <div class="bg-option bg-blue" data-bg="blue" onclick="changeBg('blue')"></div>
+          <div class="bg-option bg-green" data-bg="green" onclick="changeBg('green')"></div>
+          <div class="bg-option bg-red" data-bg="red" onclick="changeBg('red')"></div>
+          <div class="bg-option bg-gold" data-bg="gold" onclick="changeBg('gold')"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="customize-tab-content" id="customize-memes">
+      <div class="customize-section">
+        <div class="customize-section-title">Мемы</div>
+        <div class="bg-grid">
+          <div class="bg-option" data-meme="42" onclick="changeMeme('42')">
+            <img src="images/42.jpg" alt="">
+          </div>
+          <div class="bg-option" data-meme="52" onclick="changeMeme('52')">
+            <img src="images/52.jpg" alt="">
+          </div>
+          <div class="bg-option" data-meme="62" onclick="changeMeme('62')">
+            <img src="images/62.jpg" alt="">
+          </div>
+          <div class="bg-option" data-meme="72" onclick="changeMeme('72')">
+            <img src="images/72.jpg" alt="">
+          </div>
+          <div class="bg-option" data-meme="82" onclick="changeMeme('82')">
+            <img src="images/82.jpg" alt="">
+          </div>
+          <div class="bg-option" data-meme="92" onclick="changeMeme('92')">
+            <img src="images/92.jpg" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- TETRIS EVENT BUTTON -->
 <div class="tetris-event-btn" id="tetris-event-btn" onclick="openTetris()">
   <div class="tetris-event-icon">🟩</div>
   <div class="tetris-event-label">ТЕТРИС</div>
-</div>
-
-<!-- WORLD 2 BUTTON -->
-<div class="world2-btn locked" id="world2-btn" onclick="tryGoToWorld2()">
-  <div class="world2-icon" id="world2-icon">🔒</div>
-  <div class="world2-label" id="world2-label">ЗАКРЫТО</div>
-  <div class="world2-progress" id="world2-progress">0/31</div>
 </div>
 
 <!-- TETRIS OVERLAY -->
@@ -814,11 +1659,11 @@
     <div class="tetris-reward-title">НАГРАДЫ ЗА ТЕТРИС</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:14px">Улучшения выдаются один раз. Монеты — каждую игру.</div>
     <div class="tetris-reward-items">
-      <div class="tetris-reward-item">😅 <b>0–99 очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты (очки × 2)</span></div>
-      <div class="tetris-reward-item">🎯 <b>100+ очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты + 🟩 Тетрис-бустер (+10 авто/сек)</span></div>
-      <div class="tetris-reward-item">💎 <b>500+ очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты + 🎮 Геймерский палец (x3 за клик)</span></div>
-      <div class="tetris-reward-item">🏆 <b>1000+ очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты + 🏆 Чемпион тетриса (+50 авто/сек)</span></div>
-      <div class="tetris-reward-item" style="border-color:#ffd70066">👑 <b style="color:#ffd700">3000+ очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты + 👾 Аркадный режим (x10 за клик)</span></div>
+      <div class="tetris-reward-item">😅 <b>0–99 очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты (очки × 10)</span></div>
+      <div class="tetris-reward-item">🎯 <b>100+ очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты + 🟩 Тетрис-бустер (+50 авто/сек)</span></div>
+      <div class="tetris-reward-item">💎 <b>500+ очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты + 🎮 Геймерский палец (x10 за клик)</span></div>
+      <div class="tetris-reward-item">🏆 <b>1000+ очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты + 🏆 Чемпион тетриса (+200 авто/сек)</span></div>
+      <div class="tetris-reward-item" style="border-color:#ffd70066">👑 <b style="color:#ffd700">3000+ очков</b><br><span style="font-size:11px;color:var(--muted)">💰 монеты + 👾 Аркадный режим (x30 за клик)</span></div>
     </div>
     <button class="tetris-reward-btn" onclick="document.getElementById('tetris-info-overlay').classList.remove('show')">ПОНЯЛ!</button>
   </div>
@@ -1317,6 +2162,7 @@ function updateUI() {
 }
 
 function formatNum(n) {
+  if (n >= 1000000000) return (n/1000000000).toFixed(1)+'B';
   if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
   if (n >= 1000) return (n/1000).toFixed(1)+'K';
   return Math.floor(n).toString();
@@ -1452,6 +2298,40 @@ function buyUpgrade(id) {
   state.auto += upg.auto; state.perClick += upg.multi;
   setPhrase('Дмитрий одобряет! 👍'); showToast('✅ ' + upg.name + ' куплено!');
   updateUI(); renderShop(); checkAchievements(); checkWorld2Unlock(); save();
+
+  // Анимация покупки
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.upgrade-card');
+    const card = Array.from(cards).find(c => {
+      const nameEl = c.querySelector('.upgrade-name');
+      return nameEl && nameEl.textContent === upg.name;
+    });
+
+    if (card) {
+      card.classList.add('just-bought');
+
+      // Создаём частицы
+      const rect = card.getBoundingClientRect();
+      const colors = ['#ffd700', '#e94560', '#4dabf7', '#cc5de8', '#ff6b35'];
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'upgrade-particle';
+        const angle = (Math.PI * 2 / 20) * i + (Math.random() - 0.5) * 0.5;
+        const dist = 60 + Math.random() * 40;
+        particle.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+        particle.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+        particle.style.setProperty('--dur', (0.6 + Math.random() * 0.4) + 's');
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        particle.style.left = (card.offsetWidth / 2) + 'px';
+        particle.style.top = (card.offsetHeight / 2) + 'px';
+        card.appendChild(particle);
+        setTimeout(() => particle.remove(), 1000);
+      }
+
+      setTimeout(() => card.classList.remove('just-bought'), 600);
+    }
+  }, 50);
+
   if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
 }
 
@@ -1468,14 +2348,12 @@ function checkWorld2Unlock() {
 
   const btn = document.getElementById('world2-btn');
   const icon = document.getElementById('world2-icon');
-  const label = document.getElementById('world2-label');
   const progress = document.getElementById('world2-progress');
 
   if (unlocked) {
     btn.classList.remove('locked');
     icon.textContent = '🔥';
-    label.textContent = 'АД';
-    progress.textContent = 'ОТКРЫТО';
+    progress.textContent = '✓';
     if (!state.world2Unlocked) {
       state.world2Unlocked = true;
       showToast('🔥 МИР АДА ОТКРЫТ!');
@@ -1484,39 +2362,183 @@ function checkWorld2Unlock() {
   } else {
     btn.classList.add('locked');
     icon.textContent = '🔒';
-    label.textContent = 'ЗАКРЫТО';
 
     // Показываем что не хватает
-    if (!allBought && !hasCoins) {
-      progress.textContent = boughtCount + '/' + totalCount;
-    } else if (!allBought) {
+    if (!allBought) {
       progress.textContent = boughtCount + '/' + totalCount;
     } else {
-      progress.textContent = formatNum(state.coins) + '/100B';
+      const pct = Math.floor((state.coins / WORLD2_COINS_REQUIRED) * 100);
+      progress.textContent = pct + '%';
     }
   }
 }
 
 function tryGoToWorld2() {
-  const allBought = WORLD1_UPGRADE_IDS.every(id => state.bought.includes(id));
+  const boughtCount = WORLD1_UPGRADE_IDS.filter(id => state.bought.includes(id)).length;
+  const totalCount = WORLD1_UPGRADE_IDS.length;
+  const allBought = boughtCount === totalCount;
   const hasCoins = state.coins >= WORLD2_COINS_REQUIRED;
 
+  // Обновляем апгрейды
+  const upgradesPct = Math.floor((boughtCount / totalCount) * 100);
+  document.getElementById('w2-upgrades-value').textContent = boughtCount + ' / ' + totalCount;
+  document.getElementById('w2-upgrades-status').textContent = allBought ? '✅' : '❌';
+  const upgradesBar = document.getElementById('w2-upgrades-bar');
+  upgradesBar.style.width = upgradesPct + '%';
+  if (allBought) upgradesBar.classList.add('complete');
+  else upgradesBar.classList.remove('complete');
+
+  // Обновляем монеты
+  const coinsPct = Math.min(Math.floor((state.coins / WORLD2_COINS_REQUIRED) * 100), 100);
+  document.getElementById('w2-coins-value').textContent = formatNum(state.coins) + ' / 75B';
+  document.getElementById('w2-coins-status').textContent = hasCoins ? '✅' : '❌';
+  const coinsBar = document.getElementById('w2-coins-bar');
+  coinsBar.style.width = coinsPct + '%';
+  if (hasCoins) coinsBar.classList.add('complete');
+  else coinsBar.classList.remove('complete');
+
+  const btn = document.getElementById('world2-modal-btn');
   if (allBought && hasCoins) {
-    window.location.href = 'world2.html';
+    btn.textContent = 'ВОЙТИ В АД 🔥';
+    btn.classList.add('unlocked');
+    btn.onclick = () => { window.location.href = 'world2.html'; };
   } else {
-    let msg = '🔒 Требования: ';
-    if (!allBought) {
-      const remaining = WORLD1_UPGRADE_IDS.length - WORLD1_UPGRADE_IDS.filter(id => state.bought.includes(id)).length;
-      msg += remaining + ' апгрейдов';
-    }
-    if (!hasCoins) {
-      if (!allBought) msg += ', ';
-      const need = WORLD2_COINS_REQUIRED - state.coins;
-      msg += formatNum(need) + ' монет';
-    }
-    showToast(msg);
+    btn.textContent = 'ЗАКРЫТЬ';
+    btn.classList.remove('unlocked');
+    btn.onclick = closeWorld2Modal;
   }
+
+  // Показываем модальное окно
+  document.getElementById('world2-modal').classList.add('show');
 }
+
+function closeWorld2Modal() {
+  document.getElementById('world2-modal').classList.remove('show');
+}
+
+// Customization functions
+const BG_THEMES = {
+  default: { start: '#0a0e27', end: '#1a1f3a', accent1: '#6366f1', accent2: '#8b5cf6' },
+  purple: { start: '#1a0a2e', end: '#2d1b4e', accent1: '#a855f7', accent2: '#c084fc' },
+  blue: { start: '#0a1e3a', end: '#1b3a5f', accent1: '#3b82f6', accent2: '#60a5fa' },
+  green: { start: '#0a2e1a', end: '#1b4e2d', accent1: '#22c55e', accent2: '#4ade80' },
+  red: { start: '#2e0a0a', end: '#4e1b1b', accent1: '#ef4444', accent2: '#f87171' },
+  gold: { start: '#2e1f0a', end: '#4e3a1b', accent1: '#f59e0b', accent2: '#fbbf24' }
+};
+
+function openCustomize() {
+  document.getElementById('customize-modal').classList.add('show');
+}
+
+function closeCustomize() {
+  document.getElementById('customize-modal').classList.remove('show');
+}
+
+function switchCustomizeTab(tab, btn) {
+  // Switch tabs
+  document.querySelectorAll('.customize-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Switch content
+  document.querySelectorAll('.customize-tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('customize-' + tab).classList.add('active');
+}
+
+function changeBg(theme) {
+  const colors = BG_THEMES[theme];
+  if (!colors) return;
+
+  // Remove meme background if any
+  document.body.style.backgroundImage = '';
+  document.body.style.backgroundSize = '';
+  document.body.style.backgroundPosition = '';
+  document.body.style.backgroundAttachment = '';
+
+  // Update CSS variables
+  document.documentElement.style.setProperty('--bg-start', colors.start);
+  document.documentElement.style.setProperty('--bg-end', colors.end);
+  document.documentElement.style.setProperty('--accent-primary', colors.accent1);
+  document.documentElement.style.setProperty('--accent-secondary', colors.accent2);
+
+  // Update body background
+  document.body.style.background = `linear-gradient(135deg, ${colors.start} 0%, ${colors.end} 100%)`;
+
+  // Update click button gradient
+  const clickBtn = document.querySelector('.click-btn');
+  if (clickBtn) {
+    clickBtn.style.background = `linear-gradient(135deg, ${colors.accent1}, ${colors.accent2})`;
+  }
+
+  // Update active state in themes
+  document.querySelectorAll('#customize-themes .bg-option').forEach(opt => {
+    opt.classList.remove('active');
+  });
+  document.querySelector(`[data-bg="${theme}"]`).classList.add('active');
+
+  // Remove active from memes
+  document.querySelectorAll('#customize-memes .bg-option').forEach(opt => {
+    opt.classList.remove('active');
+  });
+
+  // Save to localStorage
+  try {
+    localStorage.setItem('dmitriy_bg_theme', theme);
+    localStorage.removeItem('dmitriy_bg_meme');
+  } catch(e) {}
+}
+
+function changeMeme(memeId) {
+  // Set meme as background
+  const memeUrl = `images/${memeId}.jpg`;
+  document.body.style.background = '';
+  document.body.style.backgroundImage = `url('${memeUrl}')`;
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center';
+  document.body.style.backgroundAttachment = 'fixed';
+
+  // Add dark overlay for readability
+  document.body.style.position = 'relative';
+  if (!document.getElementById('meme-overlay')) {
+    const overlay = document.createElement('div');
+    overlay.id = 'meme-overlay';
+    overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 0; pointer-events: none;';
+    document.body.insertBefore(overlay, document.body.firstChild);
+  }
+
+  // Update active state in memes
+  document.querySelectorAll('#customize-memes .bg-option').forEach(opt => {
+    opt.classList.remove('active');
+  });
+  document.querySelector(`[data-meme="${memeId}"]`).classList.add('active');
+
+  // Remove active from themes
+  document.querySelectorAll('#customize-themes .bg-option').forEach(opt => {
+    opt.classList.remove('active');
+  });
+
+  // Save to localStorage
+  try {
+    localStorage.setItem('dmitriy_bg_meme', memeId);
+    localStorage.removeItem('dmitriy_bg_theme');
+  } catch(e) {}
+}
+
+function loadBgTheme() {
+  try {
+    const savedMeme = localStorage.getItem('dmitriy_bg_meme');
+    if (savedMeme) {
+      changeMeme(savedMeme);
+      return;
+    }
+
+    const saved = localStorage.getItem('dmitriy_bg_theme');
+    if (saved && BG_THEMES[saved]) {
+      changeBg(saved);
+    }
+  } catch(e) {}
+}
+
+loadBgTheme();
 
 function renderStats() {
   document.getElementById('tab-stats').innerHTML = `
@@ -2049,14 +3071,14 @@ document.addEventListener('touchend', e => {
 
 // ===== TETRIS REWARDS =====
 const TETRIS_UPGRADES = [
-  { id: 'tetris_upg1', name: '🟩 Тетрис-бустер',   icon: '🟩', desc: '+10 авто/сек (тетрис-награда)', auto: 10, multi: 0 },
-  { id: 'tetris_upg2', name: '🎮 Геймерский палец', icon: '🎮', desc: 'x3 за клик (тетрис-награда)',    auto: 0,  multi: 2 },
-  { id: 'tetris_upg3', name: '🏆 Чемпион тетриса',  icon: '🏆', desc: '+50 авто/сек (тетрис-награда)', auto: 50, multi: 0 },
-  { id: 'tetris_upg4', name: '👾 Аркадный режим',   icon: '👾', desc: 'x10 за клик (тетрис-награда)',  auto: 0,  multi: 9 },
+  { id: 'tetris_upg1', name: '🟩 Тетрис-бустер',   icon: '🟩', desc: '+50 авто/сек (тетрис-награда)', auto: 50, multi: 0 },
+  { id: 'tetris_upg2', name: '🎮 Геймерский палец', icon: '🎮', desc: 'x10 за клик (тетрис-награда)',    auto: 0,  multi: 9 },
+  { id: 'tetris_upg3', name: '🏆 Чемпион тетриса',  icon: '🏆', desc: '+200 авто/сек (тетрис-награда)', auto: 200, multi: 0 },
+  { id: 'tetris_upg4', name: '👾 Аркадный режим',   icon: '👾', desc: 'x30 за клик (тетрис-награда)',  auto: 0,  multi: 29 },
 ];
 
 function getTetrisReward(score) {
-  const coins = Math.floor(score * 2);
+  const coins = Math.floor(score * 10);
   let upgReward = null;
   let emoji = '😔';
   let title = 'НЕПЛОХО!';
