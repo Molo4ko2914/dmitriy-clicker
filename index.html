@@ -1392,7 +1392,6 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
 const SUPABASE_URL = 'https://vaxqqmlzynbfeuyhptlg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_pFEOojIDsQgUs-rAqOwrbQ_mDuYhBAc';
 
@@ -1623,7 +1622,8 @@ function renderAchievements() {
 let state = { coins: 0, perClick: 1, auto: 0, totalClicks: 0, bought: [] };
 let tgUser = null;
 
-if (window.Telegram?.WebApp) {
+// Проверяем, что Telegram Web App API загружен
+if (typeof window.Telegram !== 'undefined' && window.Telegram?.WebApp) {
   window.Telegram.WebApp.ready();
   window.Telegram.WebApp.expand();
   tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
@@ -2217,7 +2217,23 @@ function showToast(msg) {
   window._toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-updateUI(); renderShop(); syncToSupabase();
+// Инициализация после загрузки DOM
+document.addEventListener('DOMContentLoaded', async function() {
+  // Init tetris board
+  tBoard = Array.from({length: T_ROWS}, () => Array(T_COLS).fill(0));
+  tScore = 0; tLevel = 1; tLines = 0; tTotalLines = 0;
+
+  await loadFromSupabase();
+  updateUI();
+  renderShop();
+  syncToSupabase();
+
+  // Start avatar idle float after entrance
+  setTimeout(() => {
+    const av = document.getElementById('dmitriy-avatar');
+    if (av) av.classList.add('idle');
+  }, 1000);
+});
 
 // ===== TETRIS =====
 const T_COLS = 10, T_ROWS = 20, T_BLOCK = 18;
@@ -2590,18 +2606,6 @@ function closeTetrisReward() {
   window._tetrisPendingReward = null;
   updateUI(); renderShop(); checkAchievements(); save();
 }
-
-// Init tetris board on load
-tBoard = Array.from({length: T_ROWS}, () => Array(T_COLS).fill(0));
-tScore = 0; tLevel = 1; tLines = 0; tTotalLines = 0;
-
-// Start avatar idle float after entrance
-setTimeout(() => {
-  const av = document.getElementById('dmitriy-avatar');
-  if (av) av.classList.add('idle');
-}, 1000);
-
-}); // End DOMContentLoaded
 </script>
 </body>
 </html>
