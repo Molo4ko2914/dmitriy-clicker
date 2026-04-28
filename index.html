@@ -1120,37 +1120,8 @@
     font-weight: 700;
     margin-bottom: 12px;
   }
-  .customize-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding: 4px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-  }
-  .customize-tab {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    background: transparent;
-    color: var(--text-muted);
-    font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  .customize-tab.active {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    color: white;
-  }
-  .customize-tab-content {
-    display: none;
-  }
-  .customize-tab-content.active {
-    display: block;
-  }
+
+
   .bg-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1172,6 +1143,30 @@
   .bg-option.active {
     border-color: var(--accent-primary);
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  }
+  .bg-option.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .bg-option.locked:hover {
+    transform: none;
+  }
+  .bg-price {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .bg-option.locked .bg-price {
+    color: #ff6b6b;
+  }
   }
   .bg-option::after {
     content: '✓';
@@ -1567,47 +1562,26 @@
       <button class="customize-close" onclick="closeCustomize()">✕</button>
     </div>
 
-    <div class="customize-tabs">
-      <button class="customize-tab active" onclick="switchCustomizeTab('themes', this)">Темы</button>
-      <button class="customize-tab" onclick="switchCustomizeTab('memes', this)">Мемы</button>
-    </div>
-
-    <div class="customize-tab-content active" id="customize-themes">
-      <div class="customize-section">
-        <div class="customize-section-title">Фон</div>
-        <div class="bg-grid">
-          <div class="bg-option bg-default active" data-bg="default" onclick="changeBg('default')"></div>
-          <div class="bg-option bg-purple" data-bg="purple" onclick="changeBg('purple')"></div>
-          <div class="bg-option bg-blue" data-bg="blue" onclick="changeBg('blue')"></div>
-          <div class="bg-option bg-green" data-bg="green" onclick="changeBg('green')"></div>
-          <div class="bg-option bg-red" data-bg="red" onclick="changeBg('red')"></div>
-          <div class="bg-option bg-gold" data-bg="gold" onclick="changeBg('gold')"></div>
+    <div class="customize-section">
+      <div class="customize-section-title">Фон</div>
+      <div class="bg-grid">
+        <div class="bg-option bg-default active" data-bg="default" data-price="0" onclick="buyBg('default')">
+          <div class="bg-price">БЕСПЛАТНО</div>
         </div>
-      </div>
-    </div>
-
-    <div class="customize-tab-content" id="customize-memes">
-      <div class="customize-section">
-        <div class="customize-section-title">Мемы</div>
-        <div class="bg-grid">
-          <div class="bg-option" data-meme="42" onclick="changeMeme('42')">
-            <img src="images/42.jpg" alt="">
-          </div>
-          <div class="bg-option" data-meme="52" onclick="changeMeme('52')">
-            <img src="images/52.jpg" alt="">
-          </div>
-          <div class="bg-option" data-meme="62" onclick="changeMeme('62')">
-            <img src="images/62.jpg" alt="">
-          </div>
-          <div class="bg-option" data-meme="72" onclick="changeMeme('72')">
-            <img src="images/72.jpg" alt="">
-          </div>
-          <div class="bg-option" data-meme="82" onclick="changeMeme('82')">
-            <img src="images/82.jpg" alt="">
-          </div>
-          <div class="bg-option" data-meme="92" onclick="changeMeme('92')">
-            <img src="images/92.jpg" alt="">
-          </div>
+        <div class="bg-option bg-purple" data-bg="purple" data-price="1000000" onclick="buyBg('purple')">
+          <div class="bg-price">1M</div>
+        </div>
+        <div class="bg-option bg-blue" data-bg="blue" data-price="5000000" onclick="buyBg('blue')">
+          <div class="bg-price">5M</div>
+        </div>
+        <div class="bg-option bg-green" data-bg="green" data-price="10000000" onclick="buyBg('green')">
+          <div class="bg-price">10M</div>
+        </div>
+        <div class="bg-option bg-red" data-bg="red" data-price="50000000" onclick="buyBg('red')">
+          <div class="bg-price">50M</div>
+        </div>
+        <div class="bg-option bg-gold" data-bg="gold" data-price="100000000" onclick="buyBg('gold')">
+          <div class="bg-price">100M</div>
         </div>
       </div>
     </div>
@@ -2427,6 +2401,7 @@ const BG_THEMES = {
 };
 
 function openCustomize() {
+  updateBgLocks();
   document.getElementById('customize-modal').classList.add('show');
 }
 
@@ -2434,25 +2409,34 @@ function closeCustomize() {
   document.getElementById('customize-modal').classList.remove('show');
 }
 
-function switchCustomizeTab(tab, btn) {
-  // Switch tabs
-  document.querySelectorAll('.customize-tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
 
-  // Switch content
-  document.querySelectorAll('.customize-tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById('customize-' + tab).classList.add('active');
+function buyBg(theme) {
+  const bgOption = document.querySelector(`[data-bg="${theme}"]`);
+  const price = parseInt(bgOption.dataset.price);
+
+  // Check if already owned
+  if (!state.ownedBgs) state.ownedBgs = ['default'];
+  if (state.ownedBgs.includes(theme)) {
+    changeBg(theme);
+    return;
+  }
+
+  // Check if can afford
+  if (state.coins < price) {
+    return;
+  }
+
+  // Buy background
+  state.coins -= price;
+  state.ownedBgs.push(theme);
+  updateDisplay();
+  changeBg(theme);
+  save();
 }
 
 function changeBg(theme) {
   const colors = BG_THEMES[theme];
   if (!colors) return;
-
-  // Remove meme background if any
-  document.body.style.backgroundImage = '';
-  document.body.style.backgroundSize = '';
-  document.body.style.backgroundPosition = '';
-  document.body.style.backgroundAttachment = '';
 
   // Update CSS variables
   document.documentElement.style.setProperty('--bg-start', colors.start);
@@ -2469,88 +2453,44 @@ function changeBg(theme) {
     clickBtn.style.background = `linear-gradient(135deg, ${colors.accent1}, ${colors.accent2})`;
   }
 
-  // Update active state in themes
-  document.querySelectorAll('#customize-themes .bg-option').forEach(opt => {
+  // Update active state
+  document.querySelectorAll('.bg-option').forEach(opt => {
     opt.classList.remove('active');
   });
   document.querySelector(`[data-bg="${theme}"]`).classList.add('active');
 
-  // Remove active from memes
-  document.querySelectorAll('#customize-memes .bg-option').forEach(opt => {
-    opt.classList.remove('active');
-  });
-
   // Save to localStorage
   try {
     localStorage.setItem('dmitriy_bg_theme', theme);
-    localStorage.removeItem('dmitriy_bg_meme');
   } catch(e) {}
 }
 
-function changeMeme(memeId) {
-  // Set meme as background using fetch for better compatibility
-  const memeUrl = `images/${memeId}.jpg`;
-
-  fetch(memeUrl)
-    .then(response => response.blob())
-    .then(blob => {
-      const blobUrl = URL.createObjectURL(blob);
-      document.body.style.background = '';
-      document.body.style.backgroundImage = `url('${blobUrl}')`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center';
-      document.body.style.backgroundAttachment = 'fixed';
-    })
-    .catch(err => {
-      console.error('Failed to load meme:', err);
-      // Fallback to direct URL
-      document.body.style.background = '';
-      document.body.style.backgroundImage = `url('${memeUrl}')`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundPosition = 'center';
-      document.body.style.backgroundAttachment = 'fixed';
-    });
-
-  // Add dark overlay for readability
-  document.body.style.position = 'relative';
-  if (!document.getElementById('meme-overlay')) {
-    const overlay = document.createElement('div');
-    overlay.id = 'meme-overlay';
-    overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 0; pointer-events: none;';
-    document.body.insertBefore(overlay, document.body.firstChild);
-  }
-
-  // Update active state in memes
-  document.querySelectorAll('#customize-memes .bg-option').forEach(opt => {
-    opt.classList.remove('active');
-  });
-  document.querySelector(`[data-meme="${memeId}"]`).classList.add('active');
-
-  // Remove active from themes
-  document.querySelectorAll('#customize-themes .bg-option').forEach(opt => {
-    opt.classList.remove('active');
-  });
-
-  // Save to localStorage
-  try {
-    localStorage.setItem('dmitriy_bg_meme', memeId);
-    localStorage.removeItem('dmitriy_bg_theme');
-  } catch(e) {}
-}
 
 function loadBgTheme() {
   try {
-    const savedMeme = localStorage.getItem('dmitriy_bg_meme');
-    if (savedMeme) {
-      changeMeme(savedMeme);
-      return;
-    }
-
     const saved = localStorage.getItem('dmitriy_bg_theme');
     if (saved && BG_THEMES[saved]) {
       changeBg(saved);
     }
   } catch(e) {}
+}
+
+function updateBgLocks() {
+  if (!state.ownedBgs) state.ownedBgs = ['default'];
+
+  document.querySelectorAll('.bg-option').forEach(opt => {
+    const theme = opt.dataset.bg;
+    const price = parseInt(opt.dataset.price);
+
+    if (state.ownedBgs.includes(theme)) {
+      opt.classList.remove('locked');
+      opt.querySelector('.bg-price').textContent = 'КУПЛЕНО';
+    } else if (state.coins >= price) {
+      opt.classList.remove('locked');
+    } else {
+      opt.classList.add('locked');
+    }
+  });
 }
 
 loadBgTheme();
