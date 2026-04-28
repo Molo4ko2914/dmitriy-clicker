@@ -2488,13 +2488,28 @@ function changeBg(theme) {
 }
 
 function changeMeme(memeId) {
-  // Set meme as background
+  // Set meme as background using fetch for better compatibility
   const memeUrl = `images/${memeId}.jpg`;
-  document.body.style.background = '';
-  document.body.style.backgroundImage = `url('${memeUrl}')`;
-  document.body.style.backgroundSize = 'cover';
-  document.body.style.backgroundPosition = 'center';
-  document.body.style.backgroundAttachment = 'fixed';
+
+  fetch(memeUrl)
+    .then(response => response.blob())
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      document.body.style.background = '';
+      document.body.style.backgroundImage = `url('${blobUrl}')`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+      document.body.style.backgroundAttachment = 'fixed';
+    })
+    .catch(err => {
+      console.error('Failed to load meme:', err);
+      // Fallback to direct URL
+      document.body.style.background = '';
+      document.body.style.backgroundImage = `url('${memeUrl}')`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+      document.body.style.backgroundAttachment = 'fixed';
+    });
 
   // Add dark overlay for readability
   document.body.style.position = 'relative';
