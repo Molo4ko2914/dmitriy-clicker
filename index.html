@@ -302,42 +302,7 @@
     box-shadow: 0 4px 20px #e9456055; transition: transform 0.1s;
   }
   .easter-close:active { transform: scale(0.95); }
-  /* === HEADER ENTRANCE === */
-  @keyframes headerSlideIn {
-    0%   { opacity: 0; transform: translateY(-28px) scale(0.92); }
-    70%  { opacity: 1; transform: translateY(4px) scale(1.02); }
-    100% { transform: translateY(0) scale(1); }
-  }
-  .header { animation: headerSlideIn 0.55s cubic-bezier(.22,.68,0,1.2) both; }
-
-  @keyframes avatarEntrance {
-    0%   { opacity: 0; transform: scale(0) rotate(-30deg); }
-    60%  { transform: scale(1.2) rotate(8deg); }
-    80%  { transform: scale(0.95) rotate(-4deg); }
-    100% { opacity: 1; transform: scale(1) rotate(0deg); }
-  }
-  .dmitriy-avatar {
-    cursor: pointer; transition: transform 0.15s;
-    animation: avatarEntrance 0.7s cubic-bezier(.22,.68,0,1.2) 0.1s both;
-  }
-
-  @keyframes avatarFloat {
-    0%, 100% { transform: translateY(0) rotate(-2deg); }
-    50%       { transform: translateY(-5px) rotate(2deg); }
-  }
-  .dmitriy-avatar.idle { animation: avatarFloat 3s ease-in-out infinite; }
-
-  @keyframes nameSlideIn {
-    0%   { opacity: 0; transform: translateX(-20px); }
-    100% { opacity: 1; transform: translateX(0); }
-  }
-  .header-name { animation: nameSlideIn 0.5s ease 0.35s both; }
-
-  @keyframes phraseSlideIn {
-    0%   { opacity: 0; transform: translateX(-14px); }
-    100% { opacity: 1; transform: translateX(0); }
-  }
-  .header-phrase { animation: phraseSlideIn 0.5s ease 0.5s both; }
+  .dmitriy-avatar { cursor: pointer; transition: transform 0.15s; }
 
   /* TETRIS BUTTON (shown when countdown = 0) */
   .tetris-event-btn {
@@ -560,7 +525,7 @@
     transition: background 0.2s;
   }
   .event-close-btn:active { background: #ffffff12; }
-  .dmitriy-avatar:active { transform: scale(0.88) !important; animation: none !important; }
+  .dmitriy-avatar:active { transform: scale(0.88); }
 
   /* ACHIEVEMENTS */
   .achieve-panel { display: flex; flex-direction: column; gap: 10px; }
@@ -614,37 +579,8 @@
   .ach-popup-info { flex: 1; }
   .ach-popup-label { font-size: 10px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
   .ach-popup-name { font-family: 'Russo One', sans-serif; font-size: 15px; color: var(--text); margin-top: 2px; }
-  /* === CLICK PARTICLES === */
-  .click-particle {
-    position: absolute; width: 8px; height: 8px; border-radius: 50%;
-    pointer-events: none; z-index: 300;
-    animation: particleFly var(--dur, 0.7s) ease-out forwards;
-  }
-  @keyframes particleFly {
-    0%   { transform: translate(0,0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-  }
-
-  /* === UPGRADE PURCHASE FLASH === */
-  @keyframes upgradeBuyFlash {
-    0%   { box-shadow: 0 0 0 0 #ffd70088; transform: scale(1); }
-    30%  { box-shadow: 0 0 0 16px #ffd70044; transform: scale(1.04); }
-    60%  { box-shadow: 0 0 0 28px #ffd70000; transform: scale(0.98); }
-    100% { transform: scale(1); }
-  }
-  .upgrade-card.just-bought {
-    animation: upgradeBuyFlash 0.55s cubic-bezier(.22,.68,0,1.2) forwards !important;
-  }
-  /* Confetti burst element */
-  .upgrade-confetti {
-    position: absolute; width: 7px; height: 7px; border-radius: 2px;
-    pointer-events: none; z-index: 10;
-    animation: confettiFly var(--dur, 0.7s) ease-out forwards;
-  }
-  @keyframes confettiFly {
-    0%   { transform: translate(0,0) rotate(0deg) scale(1); opacity: 1; }
-    100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.3); opacity: 0; }
-  }
+  .ach-popup-stars { font-size: 18px; margin-top: 2px; }
+</style>
 </head>
 <body>
 <div class="app">
@@ -1300,24 +1236,6 @@ function spawnClickFX(e) {
   area.appendChild(sw);
   setTimeout(() => sw.remove(), 500);
 
-  // Particles burst
-  const colors = ['#ffd700','#e94560','#ff8c42','#ffffff','#cc5de8'];
-  const count = 8 + Math.floor(Math.random() * 5);
-  for (let i = 0; i < count; i++) {
-    const p = document.createElement('div');
-    p.className = 'click-particle';
-    const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.5;
-    const dist = 50 + Math.random() * 60;
-    p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
-    p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
-    p.style.setProperty('--dur', (0.5 + Math.random() * 0.35) + 's');
-    p.style.background = colors[Math.floor(Math.random() * colors.length)];
-    p.style.left = (rect.width / 2 - 4) + 'px';
-    p.style.top = (rect.height / 2 - 4) + 'px';
-    area.appendChild(p);
-    setTimeout(() => p.remove(), 900);
-  }
-
   // Кнопка bounce
   const btn = document.querySelector('.click-btn');
   btn.classList.remove('clicked');
@@ -1358,35 +1276,6 @@ function buyUpgrade(id) {
   state.auto += upg.auto; state.perClick += upg.multi;
   setPhrase('Дмитрий одобряет! 👍'); showToast('✅ ' + upg.name + ' куплено!');
   updateUI(); renderShop(); checkAchievements(); save();
-
-  // Find the bought card and animate it
-  setTimeout(() => {
-    const cards = document.querySelectorAll('.upgrade-card.bought');
-    const card = Array.from(cards).find(c => c.querySelector('.upgrade-name')?.textContent === upg.name);
-    if (card) {
-      card.classList.add('just-bought');
-      // Confetti burst
-      const confettiColors = ['#ffd700','#e94560','#ff8c42','#cc5de8','#4dabf7','#39ff14'];
-      const rect = card.getBoundingClientRect();
-      for (let i = 0; i < 14; i++) {
-        const c = document.createElement('div');
-        c.className = 'upgrade-confetti';
-        const angle = (Math.PI * 2 / 14) * i + (Math.random() - 0.5) * 0.4;
-        const dist = 40 + Math.random() * 70;
-        c.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
-        c.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
-        c.style.setProperty('--rot', (Math.random() * 360) + 'deg');
-        c.style.setProperty('--dur', (0.5 + Math.random() * 0.4) + 's');
-        c.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-        c.style.left = (card.offsetWidth / 2) + 'px';
-        c.style.top = (card.offsetHeight / 2) + 'px';
-        card.appendChild(c);
-        setTimeout(() => c.remove(), 1000);
-      }
-      setTimeout(() => card.classList.remove('just-bought'), 600);
-    }
-  }, 50);
-
   if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
 }
 
@@ -2005,12 +1894,6 @@ function closeTetrisReward() {
 // Init tetris board on load
 tBoard = Array.from({length: T_ROWS}, () => Array(T_COLS).fill(0));
 tScore = 0; tLevel = 1; tLines = 0; tTotalLines = 0;
-
-// Start avatar idle float after entrance
-setTimeout(() => {
-  const av = document.getElementById('dmitriy-avatar');
-  if (av) av.classList.add('idle');
-}, 1000);
 </script>
 </body>
 </html>
