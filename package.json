@@ -1,0 +1,21 @@
+{
+  "name": "cosmo-batalii-pvp-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for Cosmo-Batalii PvP mode",
+  "main": "cosmo-server.js",
+  "scripts": {
+    "start": "node cosmo-server.js",
+    "dev": "nodemon cosmo-server.js"
+  },
+  "keywords": ["websocket", "game", "pvp", "socket.io"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.6.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
