@@ -485,11 +485,34 @@ app.get('/status', (req, res) => {
     status: 'online',
     activeGames: activeGames.size,
     waitingPlayers: waitingPlayers.length,
-    connectedPlayers: io.sockets.sockets.size
+    connectedPlayers: io.sockets.sockets.size,
+    port: PORT,
+    timestamp: new Date().toISOString()
   });
+});
+
+// Healthcheck для Railway
+app.get('/', (req, res) => {
+  res.send('Cosmo-Batalii PvP Server is running! 🪐');
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
 });
 
 server.listen(PORT, HOST, () => {
   console.log(`🪐 Cosmo-Batalii PvP Server running on port ${PORT}`);
+  console.log(`Host: ${HOST}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Status: http://localhost:${PORT}/status`);
+  console.log(`Health: http://localhost:${PORT}/health`);
+  console.log(`Server started at: ${new Date().toISOString()}`);
+});
+
+server.on('error', (error) => {
+  console.error('Server error:', error);
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+  }
+  process.exit(1);
 });
