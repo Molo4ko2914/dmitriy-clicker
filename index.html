@@ -3385,12 +3385,20 @@ async function updateOnlineCount() {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/scores?select=user_id&last_active=gte.${fiveMinutesAgo}`, {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
+
+    if (!res.ok) {
+      console.error('Failed to fetch online count:', res.status, res.statusText);
+      document.getElementById('online-count').textContent = '0';
+      return;
+    }
+
     const data = await res.json();
     const count = data ? data.length : 0;
 
     document.getElementById('online-count').textContent = count;
   } catch(e) {
-    document.getElementById('online-count').textContent = '?';
+    console.error('Error updating online count:', e);
+    document.getElementById('online-count').textContent = '0';
   }
 }
 
@@ -4496,6 +4504,16 @@ function updateCosmoUltUI() {
 function activateCosmoUlt() {
   if (!csUltAvailable || !csGameRunning) return;
   if (csUltPendingHit) return; // already queued
+
+  // В PvP режиме отправляем событие на сервер
+  if (cosmoPvPMode && cosmoPvPSocket && cosmoPvPSocket.connected) {
+    cosmoPvPSocket.emit('use-ult');
+    showToast('⚡ Мега-удар заряжен — отбей шар!');
+    if (window.Telegram?.WebApp?.HapticFeedback) window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+    return;
+  }
+
+  // В режиме против бота (оригинальная логика)
   csUltPendingHit = true;
   // Play ult sound for 3 seconds
   const ultAudio = document.getElementById('ult-sound');
@@ -4785,7 +4803,7 @@ function cosmoDraw() {
 
 // ===== COSMO PvP MODE =====
 // ВАЖНО: Замени этот URL на свой Railway URL!
-const COSMO_SERVER_URL = 'dmitriy-clicker-production.up.railway.app'; // Измени на URL из Railway!
+const COSMO_SERVER_URL = 'https://dmitriy-clicker-production.up.railway.app';
 let cosmoPvPSocket = null;
 let cosmoPvPMode = false;
 let cosmoPvPGameId = null;
@@ -4921,7 +4939,7 @@ function createPvPTable() {
     return;
   }
 
-  const username = tgUser.username || tgUser.first_name || 'Игрок';
+  const username = tgUser?.username || tgUser?.first_name || 'Игрок_' + Math.floor(Math.random() * 1000);
   cosmoPvPSocket.emit('create-table', { username });
   showToast('✅ Стол создан! Ожидание соперника...');
 }
@@ -4932,7 +4950,7 @@ function joinPvPTable(tableId) {
     return;
   }
 
-  const username = tgUser.username || tgUser.first_name || 'Игрок';
+  const username = tgUser?.username || tgUser?.first_name || 'Игрок_' + Math.floor(Math.random() * 1000);
   cosmoPvPSocket.emit('join-table', { tableId, username });
 }
 
@@ -4967,9 +4985,15 @@ function startCosmoPvPGame() {
   };
 }
 
+let lastPaddleSendTime = 0;
 function sendCosmoPvPPaddleMove(x) {
   if (cosmoPvPSocket && cosmoPvPSocket.connected) {
-    cosmoPvPSocket.emit('paddle-move', { x: x - COSMO_PADDLE_W / 2 });
+    // Отправляем каждые 8ms (120 FPS) вместо каждого движения
+    const now = Date.now();
+    if (now - lastPaddleSendTime >= 8) {
+      cosmoPvPSocket.emit('paddle-move', { x: x - COSMO_PADDLE_W / 2 });
+      lastPaddleSendTime = now;
+    }
   }
 }
 
@@ -4983,9 +5007,21 @@ function updateCosmoPvPGameState(state) {
   csPlayerScore = cosmoPvPPlayerNum === 1 ? state.score1 : state.score2;
   csBotScore = cosmoPvPPlayerNum === 1 ? state.score2 : state.score1;
 
+  // Обновляем механики
+  csUltAvailable = cosmoPvPPlayerNum === 1 ? state.ult1Available : state.ult2Available;
+  csUltUsed = cosmoPvPPlayerNum === 1 ? state.ult1Used : state.ult2Used;
+  csHitCount = cosmoPvPPlayerNum === 1 ? state.ult1Hits : state.ult2Hits;
+  csLightningTime = cosmoPvPPlayerNum === 1 ? state.lightningTime1 : state.lightningTime2;
+
+  csGadgets = state.gadgets || [];
+  csGrenades = state.grenades || [];
+  csBallFrozen = state.ballFrozen || false;
+  csWhiteFlash = state.whiteFlash || 0;
+
   // Обновляем UI
   document.getElementById('cs-player').textContent = csPlayerScore;
   document.getElementById('cs-bot').textContent = csBotScore;
+  updateCosmoUltUI();
 
   // Рисуем
   drawCosmoPvP();
@@ -4994,6 +5030,12 @@ function updateCosmoPvPGameState(state) {
 function drawCosmoPvP() {
   if (!csCtx) return;
   const ctx = csCtx;
+
+  // White flash (от взрыва гранаты)
+  if (csWhiteFlash > 0) {
+    ctx.fillStyle = `rgba(255,255,255,${csWhiteFlash / 10})`;
+    ctx.fillRect(0, 0, COSMO_W, COSMO_H);
+  }
 
   // Background
   ctx.fillStyle = '#000510';
@@ -5015,16 +5057,58 @@ function drawCosmoPvP() {
   ctx.beginPath(); ctx.moveTo(0, COSMO_H / 2); ctx.lineTo(COSMO_W, COSMO_H / 2); ctx.stroke();
   ctx.setLineDash([]);
 
+  // Гаджеты (ловушки заморозки)
+  for (const g of csGadgets) {
+    ctx.globalAlpha = 1;
+    ctx.shadowColor = '#60a5fa';
+    ctx.shadowBlur = 14;
+    const rg = ctx.createRadialGradient(g.x, g.y, 2, g.x, g.y, COSMO_GADGET_R);
+    rg.addColorStop(0, 'rgba(147,210,255,0.9)');
+    rg.addColorStop(1, 'rgba(59,130,246,0.3)');
+    ctx.fillStyle = rg;
+    ctx.beginPath(); ctx.arc(g.x, g.y, COSMO_GADGET_R, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.font = (COSMO_GADGET_R * 1.4) + 'px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('❄️', g.x, g.y);
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  // Гранаты
+  for (const gr of csGrenades) {
+    ctx.globalAlpha = 1;
+    ctx.shadowColor = '#f97316';
+    ctx.shadowBlur = 16;
+    const grg = ctx.createRadialGradient(gr.x, gr.y, 2, gr.x, gr.y, COSMO_GRENADE_R);
+    grg.addColorStop(0, 'rgba(255,150,50,0.95)');
+    grg.addColorStop(1, 'rgba(185,28,28,0.3)');
+    ctx.fillStyle = grg;
+    ctx.beginPath(); ctx.arc(gr.x, gr.y, COSMO_GRENADE_R, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.font = (COSMO_GRENADE_R * 1.5) + 'px serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('💣', gr.x, gr.y);
+    ctx.textBaseline = 'alphabetic';
+  }
+
   // Paddles
   ctx.fillStyle = '#ec4899';
   ctx.fillRect(csPlayerPaddle.x, csPlayerPaddle.y, COSMO_PADDLE_W, COSMO_PADDLE_H);
   ctx.fillRect(csBotPaddle.x, csBotPaddle.y, COSMO_PADDLE_W, COSMO_PADDLE_H);
 
-  // Ball
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  ctx.arc(csBall.x, csBall.y, COSMO_BALL_R, 0, Math.PI * 2);
-  ctx.fill();
+  // Ball (голова Дмитрия или обычный мяч)
+  if (csDmitryHead) {
+    ctx.save();
+    ctx.translate(csBall.x, csBall.y);
+    ctx.drawImage(csDmitryHead, -COSMO_BALL_R, -COSMO_BALL_R, COSMO_BALL_R * 2, COSMO_BALL_R * 2);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(csBall.x, csBall.y, COSMO_BALL_R, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   // Ball glow
   const grad = ctx.createRadialGradient(csBall.x, csBall.y, 0, csBall.x, csBall.y, COSMO_BALL_R * 2);
@@ -5034,6 +5118,34 @@ function drawCosmoPvP() {
   ctx.beginPath();
   ctx.arc(csBall.x, csBall.y, COSMO_BALL_R * 2, 0, Math.PI * 2);
   ctx.fill();
+
+  // Эффект заморозки мяча
+  if (csBallFrozen) {
+    ctx.globalAlpha = 0.7;
+    ctx.strokeStyle = '#60a5fa';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(csBall.x, csBall.y, COSMO_BALL_R + 5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Эффект молнии от ульты
+  if (csLightningTime > 0) {
+    ctx.globalAlpha = csLightningTime / 30;
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = '#fbbf24';
+    ctx.shadowBlur = 20;
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(csBall.x, csBall.y);
+      ctx.lineTo(csBall.x + (Math.random() - 0.5) * 60, csBall.y + (Math.random() - 0.5) * 60);
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+  }
 }
 
 function endCosmoPvPGame(data) {
