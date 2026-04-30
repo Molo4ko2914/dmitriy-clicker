@@ -1351,6 +1351,189 @@
     transform: scale(1.05);
   }
 
+  /* Graphics Settings */
+  .graphics-settings {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .graphics-settings-title {
+    font-family: 'Russo One', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .graphics-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .graphics-option:last-child {
+    border-bottom: none;
+  }
+  .graphics-option-label {
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .graphics-option-desc {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  .graphics-toggle {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    background: #333;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  .graphics-toggle.active {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+  }
+  .graphics-toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+  }
+  .graphics-toggle.active .graphics-toggle-slider {
+    transform: translateX(22px);
+  }
+  .graphics-preset {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .graphics-preset-btn {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    background: var(--glass-bg);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .graphics-preset-btn:hover {
+    transform: translateY(-1px);
+    border-color: #ec4899;
+  }
+  .graphics-preset-btn.active {
+    background: linear-gradient(135deg, #ec4899, #be185d);
+    border-color: #ec4899;
+    color: white;
+  }
+  .fps-counter {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .fps-counter.good { color: #22c55e; }
+  .fps-counter.medium { color: #f59e0b; }
+  .fps-counter.bad { color: #ef4444; }
+
+  /* Modal Overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalSlideIn 0.3s ease;
+  }
+  @keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .modal-title {
+    font-family: 'Russo One', sans-serif;
+    font-size: 18px;
+    color: var(--text);
+  }
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+  .modal-body {
+    padding: 20px;
+  }
+  .modal-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    font-family: 'Russo One', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  }
+
   .cosmo-ult-bar {
     display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 0 2px;
   }
@@ -1981,6 +2164,7 @@
       <div class="header-phrase" id="phrase">Привет! Начнём кликать? 💪</div>
     </div>
     <div class="customize-btn" onclick="openCustomize()">🎨</div>
+    <div class="customize-btn" onclick="openGraphicsSettings()" style="margin-left:8px">⚙️</div>
   </div>
 
   <div class="coins-display">
@@ -2017,6 +2201,71 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Graphics Settings Modal -->
+<div class="overlay" id="graphics-settings-overlay" style="display:none">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Настройки графики PvP</div>
+      <button class="modal-close" onclick="closeGraphicsSettings()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+
+      <div class="graphics-settings" style="margin-bottom:0">
+        <div class="graphics-preset">
+          <button class="graphics-preset-btn" onclick="setGraphicsPreset('low')">🔋 Экономия</button>
+          <button class="graphics-preset-btn active" onclick="setGraphicsPreset('medium')">⚡ Баланс</button>
+          <button class="graphics-preset-btn" onclick="setGraphicsPreset('high')">💎 Качество</button>
+        </div>
+
+        <div class="graphics-option">
+          <div class="graphics-option-label">
+            <span>Эффекты свечения</span>
+            <span class="graphics-option-desc">Тени и блики</span>
+          </div>
+          <div class="graphics-toggle active" id="toggle-effects-modal" onclick="toggleGraphicsOption('effects')">
+            <div class="graphics-toggle-slider"></div>
+          </div>
+        </div>
+
+        <div class="graphics-option">
+          <div class="graphics-option-label">
+            <span>Частицы</span>
+            <span class="graphics-option-desc">Звёзды и эффекты</span>
+          </div>
+          <div class="graphics-toggle active" id="toggle-particles-modal" onclick="toggleGraphicsOption('particles')">
+            <div class="graphics-toggle-slider"></div>
+          </div>
+        </div>
+
+        <div class="graphics-option">
+          <div class="graphics-option-label">
+            <span>Показывать FPS</span>
+            <span class="graphics-option-desc">Счётчик кадров</span>
+          </div>
+          <div class="graphics-toggle" id="toggle-fps-modal" onclick="toggleGraphicsOption('showFps')">
+            <div class="graphics-toggle-slider"></div>
+          </div>
+        </div>
+
+        <div class="graphics-option">
+          <div class="graphics-option-label">
+            <span>Целевой FPS: <span id="target-fps-value-modal">60</span></span>
+            <span class="graphics-option-desc">30 / 45 / 60 кадров</span>
+          </div>
+          <input type="range" min="30" max="60" step="15" value="60" id="target-fps-slider-modal"
+                 style="width:100%" oninput="updateTargetFps(this.value)">
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:12px;background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.3);border-radius:8px;font-size:12px;color:var(--text-muted)">
+        💡 <strong>Совет:</strong> Если игра лагает, попробуйте пресет "Экономия" или снизьте целевой FPS до 30.
+      </div>
+
+      <button class="modal-btn" onclick="closeGraphicsSettings()" style="margin-top:16px;width:100%">Готово</button>
+    </div>
+  </div>
+</div>
 
 <!-- Offline farm modal -->
 <div class="offline-modal" id="offline-modal">
@@ -2208,6 +2457,57 @@
     <div id="cosmo-pvp-lobby" style="display:none;padding:10px 0">
       <div class="cosmo-diff-title">⚔️ PvP ЛОББИ</div>
       <div class="cosmo-diff-sub">Выбери стол или создай свой</div>
+
+      <!-- Graphics Settings -->
+      <div class="graphics-settings">
+        <div class="graphics-settings-title">⚙️ Настройки графики</div>
+
+        <div class="graphics-preset">
+          <button class="graphics-preset-btn" onclick="setGraphicsPreset('low')">🔋 Экономия</button>
+          <button class="graphics-preset-btn active" onclick="setGraphicsPreset('medium')">⚡ Баланс</button>
+          <button class="graphics-preset-btn" onclick="setGraphicsPreset('high')">💎 Качество</button>
+        </div>
+
+        <div class="graphics-option">
+          <div class="graphics-option-label">
+            <span>Эффекты свечения</span>
+            <span class="graphics-option-desc">Тени и блики</span>
+          </div>
+          <div class="graphics-toggle active" id="toggle-effects" onclick="toggleGraphicsOption('effects')">
+            <div class="graphics-toggle-slider"></div>
+          </div>
+        </div>
+
+        <div class="graphics-option">
+          <div class="graphics-option-label">
+            <span>Частицы</span>
+            <span class="graphics-option-desc">Звёзды и эффекты</span>
+          </div>
+          <div class="graphics-toggle active" id="toggle-particles" onclick="toggleGraphicsOption('particles')">
+            <div class="graphics-toggle-slider"></div>
+          </div>
+        </div>
+
+        <div class="graphics-option">
+          <div class="graphics-option-label">
+            <span>Показывать FPS</span>
+            <span class="graphics-option-desc">Счётчик кадров</span>
+          </div>
+          <div class="graphics-toggle" id="toggle-fps" onclick="toggleGraphicsOption('showFps')">
+            <div class="graphics-toggle-slider"></div>
+          </div>
+        </div>
+
+        <div class="graphics-option">
+          <div class="graphics-option-label">
+            <span>Целевой FPS: <span id="target-fps-value">60</span></span>
+            <span class="graphics-option-desc">30 / 45 / 60 кадров</span>
+          </div>
+          <input type="range" min="30" max="60" step="15" value="60" id="target-fps-slider"
+                 style="width:100px" oninput="updateTargetFps(this.value)">
+        </div>
+      </div>
+
       <div id="pvp-tables-list" style="max-height:300px;overflow-y:auto;margin-bottom:12px">
         <div class="lb-loading">⏳ Загрузка столов...</div>
       </div>
@@ -2796,13 +3096,15 @@ function closeTetrisEventModal() {
 }
 
 function updateUI() {
+  const rebirthMult = getRebirthMultiplier();
+
   document.getElementById('coins').textContent = formatNum(state.coins);
-  document.getElementById('per-click').textContent = state.perClick;
-  document.getElementById('auto-click').textContent = state.auto;
+  // Показываем реальные значения с учётом мультипликатора
+  document.getElementById('per-click').textContent = Math.floor(state.perClick * rebirthMult);
+  document.getElementById('auto-click').textContent = Math.floor(state.auto * rebirthMult);
   document.getElementById('total-clicks').textContent = formatNum(state.totalClicks);
 
   // Обновляем множитель перерождений
-  const rebirthMult = getRebirthMultiplier();
   document.getElementById('rebirth-multiplier').textContent = `x${rebirthMult.toFixed(1)}`;
 }
 
@@ -2891,7 +3193,7 @@ function handleClick(e) {
     return;
   }
 
-  state.coins += state.perClick;
+  state.coins += state.perClick * getRebirthMultiplier();
   state.totalClicks++;
 
   // Проверка speedClicks (10 кликов за 3 секунды)
@@ -2976,19 +3278,38 @@ function setPhrase(text) {
   setTimeout(() => { el.textContent = text; el.style.opacity = 1; }, 150);
 }
 
-setInterval(() => { if (state.auto > 0) { state.coins += state.auto; updateUI(); } }, 1000);
+setInterval(() => { if (state.auto > 0) { state.coins += state.auto * getRebirthMultiplier(); updateUI(); } }, 1000);
 setInterval(save, 30000);
 
 function renderShop() {
   const el = document.getElementById('tab-shop');
   el.innerHTML = '';
+  const rebirthMult = getRebirthMultiplier();
+
   for (const upg of UPGRADES) {
     const bought = state.bought.includes(upg.id);
     const canAfford = state.coins >= upg.cost;
+
+    // Вычисляем реальные значения с учётом мультипликатора
+    const actualAuto = Math.floor(upg.auto * rebirthMult);
+    const actualMulti = Math.floor(upg.multi * rebirthMult);
+
+    // Обновляем описание с реальными значениями
+    let desc = upg.desc;
+    if (rebirthMult > 1) {
+      // Заменяем значения в описании на реальные
+      if (upg.auto > 0) {
+        desc = desc.replace(/\+(\d+)/, `+${actualAuto}`);
+      }
+      if (upg.multi > 0) {
+        desc = desc.replace(/\+(\d+)/, `+${actualMulti}`);
+      }
+    }
+
     const div = document.createElement('div');
     div.className = `upgrade-card rarity-${upg.rarity} ${bought?'bought':canAfford?'affordable':'cant-afford'}`;
     div.innerHTML = `<div class="upgrade-rarity-bar"></div><div class="upgrade-icon">${upg.icon}</div>
-      <div class="upgrade-info"><div class="upgrade-name">${upg.name}</div><div class="upgrade-desc">${upg.desc}</div></div>
+      <div class="upgrade-info"><div class="upgrade-name">${upg.name}</div><div class="upgrade-desc">${desc}</div></div>
       <div class="upgrade-cost ${bought?'bought-label':''}">${bought?'✅ Куплено':'💰 '+formatNum(upg.cost)}</div>`;
     if (!bought) div.onclick = () => buyUpgrade(upg.id);
     el.appendChild(div);
@@ -3155,6 +3476,16 @@ function openCustomize() {
 
 function closeCustomize() {
   document.getElementById('customize-modal').classList.remove('show');
+}
+
+// Graphics Settings Modal
+function openGraphicsSettings() {
+  updateGraphicsUI();
+  document.getElementById('graphics-settings-overlay').style.display = 'flex';
+}
+
+function closeGraphicsSettings() {
+  document.getElementById('graphics-settings-overlay').style.display = 'none';
 }
 
 function switchCustomizeTab(tab, btn) {
@@ -4954,6 +5285,119 @@ function joinPvPTable(tableId) {
   cosmoPvPSocket.emit('join-table', { tableId, username });
 }
 
+// ===== GRAPHICS SETTINGS =====
+const graphicsSettings = {
+  effects: true,        // Свечения и тени
+  particles: true,      // Звёзды и частицы
+  showFps: false,       // Показывать FPS счётчик
+  targetFps: 60,        // Целевой FPS (30, 45, 60)
+  preset: 'medium'      // low, medium, high
+};
+
+// Загрузка настроек из localStorage
+function loadGraphicsSettings() {
+  const saved = localStorage.getItem('cosmoPvPGraphics');
+  if (saved) {
+    Object.assign(graphicsSettings, JSON.parse(saved));
+    updateGraphicsUI();
+  }
+}
+
+// Сохранение настроек
+function saveGraphicsSettings() {
+  localStorage.setItem('cosmoPvPGraphics', JSON.stringify(graphicsSettings));
+}
+
+// Обновление UI настроек
+function updateGraphicsUI() {
+  // Обновляем элементы в PvP лобби
+  const toggleEffects = document.getElementById('toggle-effects');
+  const toggleParticles = document.getElementById('toggle-particles');
+  const toggleFps = document.getElementById('toggle-fps');
+  const targetFpsSlider = document.getElementById('target-fps-slider');
+  const targetFpsValue = document.getElementById('target-fps-value');
+
+  if (toggleEffects) toggleEffects.classList.toggle('active', graphicsSettings.effects);
+  if (toggleParticles) toggleParticles.classList.toggle('active', graphicsSettings.particles);
+  if (toggleFps) toggleFps.classList.toggle('active', graphicsSettings.showFps);
+  if (targetFpsSlider) targetFpsSlider.value = graphicsSettings.targetFps;
+  if (targetFpsValue) targetFpsValue.textContent = graphicsSettings.targetFps;
+
+  // Обновляем элементы в модальном окне
+  const toggleEffectsModal = document.getElementById('toggle-effects-modal');
+  const toggleParticlesModal = document.getElementById('toggle-particles-modal');
+  const toggleFpsModal = document.getElementById('toggle-fps-modal');
+  const targetFpsSliderModal = document.getElementById('target-fps-slider-modal');
+  const targetFpsValueModal = document.getElementById('target-fps-value-modal');
+
+  if (toggleEffectsModal) toggleEffectsModal.classList.toggle('active', graphicsSettings.effects);
+  if (toggleParticlesModal) toggleParticlesModal.classList.toggle('active', graphicsSettings.particles);
+  if (toggleFpsModal) toggleFpsModal.classList.toggle('active', graphicsSettings.showFps);
+  if (targetFpsSliderModal) targetFpsSliderModal.value = graphicsSettings.targetFps;
+  if (targetFpsValueModal) targetFpsValueModal.textContent = graphicsSettings.targetFps;
+
+  // Обновляем активный пресет
+  document.querySelectorAll('.graphics-preset-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  const presetBtns = document.querySelectorAll('.graphics-preset-btn');
+  presetBtns.forEach(btn => {
+    const text = btn.textContent;
+    if ((graphicsSettings.preset === 'low' && text.includes('Экономия')) ||
+        (graphicsSettings.preset === 'medium' && text.includes('Баланс')) ||
+        (graphicsSettings.preset === 'high' && text.includes('Качество'))) {
+      btn.classList.add('active');
+    }
+  });
+}
+
+// Переключение опции
+function toggleGraphicsOption(option) {
+  graphicsSettings[option] = !graphicsSettings[option];
+  updateGraphicsUI();
+  saveGraphicsSettings();
+}
+
+// Обновление целевого FPS
+function updateTargetFps(value) {
+  graphicsSettings.targetFps = parseInt(value);
+
+  // Обновляем оба элемента
+  const targetFpsValue = document.getElementById('target-fps-value');
+  const targetFpsValueModal = document.getElementById('target-fps-value-modal');
+
+  if (targetFpsValue) targetFpsValue.textContent = value;
+  if (targetFpsValueModal) targetFpsValueModal.textContent = value;
+
+  saveGraphicsSettings();
+}
+
+// Установка пресета
+function setGraphicsPreset(preset) {
+  graphicsSettings.preset = preset;
+
+  if (preset === 'low') {
+    graphicsSettings.effects = false;
+    graphicsSettings.particles = false;
+    graphicsSettings.targetFps = 30;
+  } else if (preset === 'medium') {
+    graphicsSettings.effects = true;
+    graphicsSettings.particles = true;
+    graphicsSettings.targetFps = 45;
+  } else if (preset === 'high') {
+    graphicsSettings.effects = true;
+    graphicsSettings.particles = true;
+    graphicsSettings.targetFps = 60;
+  }
+
+  updateGraphicsUI();
+  saveGraphicsSettings();
+  showToast(`✅ Пресет "${preset === 'low' ? 'Экономия' : preset === 'medium' ? 'Баланс' : 'Качество'}" применён`);
+}
+
+// Загружаем настройки при старте
+loadGraphicsSettings();
+
 function startCosmoPvPGame() {
   document.getElementById('cosmo-diff-screen').style.display = 'none';
   document.getElementById('cosmo-game-screen').style.display = 'block';
@@ -4986,24 +5430,46 @@ function startCosmoPvPGame() {
 }
 
 let lastPaddleSendTime = 0;
+let lastPaddleX = 0;
+
 function sendCosmoPvPPaddleMove(x) {
   if (cosmoPvPSocket && cosmoPvPSocket.connected) {
-    // Отправляем каждые 8ms (120 FPS) вместо каждого движения
     const now = Date.now();
-    if (now - lastPaddleSendTime >= 8) {
-      cosmoPvPSocket.emit('paddle-move', { x: x - COSMO_PADDLE_W / 2 });
+    const paddleX = x - COSMO_PADDLE_W / 2;
+
+    // Интервал отправки зависит от целевого FPS
+    const paddleSendInterval = 1000 / graphicsSettings.targetFps;
+
+    // Отправляем только если прошло достаточно времени И позиция изменилась значительно
+    if (now - lastPaddleSendTime >= paddleSendInterval && Math.abs(paddleX - lastPaddleX) > 2) {
+      cosmoPvPSocket.emit('paddle-move', { x: paddleX });
       lastPaddleSendTime = now;
+      lastPaddleX = paddleX;
     }
   }
 }
+
+// Интерполяция для плавного движения противника
+let csOpponentPaddleTarget = { x: COSMO_W / 2 - COSMO_PADDLE_W / 2 };
+let csOpponentPaddleCurrent = { x: COSMO_W / 2 - COSMO_PADDLE_W / 2 };
+let lastPvPRenderTime = 0;
 
 function updateCosmoPvPGameState(state) {
   if (!csCtx || !csGameRunning) return;
 
   // Обновляем локальное состояние
   csBall = state.ball;
-  csPlayerPaddle = cosmoPvPPlayerNum === 1 ? state.paddle1 : state.paddle2;
-  csBotPaddle = cosmoPvPPlayerNum === 1 ? state.paddle2 : state.paddle1;
+
+  // Восстанавливаем полные данные ракеток (y координаты статичны)
+  const paddle1Full = { x: state.paddle1.x, y: COSMO_H - 30 };
+  const paddle2Full = { x: state.paddle2.x, y: 18 };
+
+  csPlayerPaddle = cosmoPvPPlayerNum === 1 ? paddle1Full : paddle2Full;
+
+  // Для ракетки противника используем интерполяцию
+  const opponentPaddle = cosmoPvPPlayerNum === 1 ? paddle2Full : paddle1Full;
+  csOpponentPaddleTarget.x = opponentPaddle.x;
+
   csPlayerScore = cosmoPvPPlayerNum === 1 ? state.score1 : state.score2;
   csBotScore = cosmoPvPPlayerNum === 1 ? state.score2 : state.score1;
 
@@ -5023,51 +5489,103 @@ function updateCosmoPvPGameState(state) {
   document.getElementById('cs-bot').textContent = csBotScore;
   updateCosmoUltUI();
 
-  // Рисуем
-  drawCosmoPvP();
+  // Интерполируем позицию ракетки противника для плавности
+  const lerpFactor = graphicsSettings.targetFps >= 60 ? 0.5 : (graphicsSettings.targetFps >= 45 ? 0.4 : 0.3);
+  csOpponentPaddleCurrent.x += (csOpponentPaddleTarget.x - csOpponentPaddleCurrent.x) * lerpFactor;
+  csBotPaddle = { x: csOpponentPaddleCurrent.x, y: opponentPaddle.y };
+
+  // Throttling рендеринга в зависимости от целевого FPS
+  const now = Date.now();
+  const pvpRenderInterval = 1000 / graphicsSettings.targetFps;
+  if (now - lastPvPRenderTime >= pvpRenderInterval) {
+    drawCosmoPvP();
+    lastPvPRenderTime = now;
+  }
 }
+
+// Кэш для статичного фона
+let cosmoPvPBgCache = null;
+let pvpFpsCounter = 0;
+let pvpFpsTime = Date.now();
+let pvpCurrentFps = 0;
 
 function drawCosmoPvP() {
   if (!csCtx) return;
   const ctx = csCtx;
 
+  // FPS счётчик
+  pvpFpsCounter++;
+  const now = Date.now();
+  if (now - pvpFpsTime >= 1000) {
+    pvpCurrentFps = pvpFpsCounter;
+    pvpFpsCounter = 0;
+    pvpFpsTime = now;
+  }
+
   // White flash (от взрыва гранаты)
   if (csWhiteFlash > 0) {
-    ctx.fillStyle = `rgba(255,255,255,${csWhiteFlash / 10})`;
+    ctx.fillStyle = `rgba(255,255,255,${Math.min(csWhiteFlash / 10, 0.8)})`;
     ctx.fillRect(0, 0, COSMO_W, COSMO_H);
+    return;
   }
 
-  // Background
-  ctx.fillStyle = '#000510';
-  ctx.fillRect(0, 0, COSMO_W, COSMO_H);
+  // Рисуем кэшированный фон (звёзды + линия)
+  if (!cosmoPvPBgCache || !graphicsSettings.particles) {
+    const bgCanvas = document.createElement('canvas');
+    bgCanvas.width = COSMO_W;
+    bgCanvas.height = COSMO_H;
+    const bgCtx = bgCanvas.getContext('2d', { alpha: false });
 
-  // Stars
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  for (let i = 0; i < 40; i++) {
-    const sx = ((i * 137 + 17) % COSMO_W);
-    const sy = ((i * 83 + 31) % COSMO_H);
-    const sr = i % 3 === 0 ? 1.5 : 0.8;
-    ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+    // Background
+    bgCtx.fillStyle = '#000510';
+    bgCtx.fillRect(0, 0, COSMO_W, COSMO_H);
+
+    // Stars (количество зависит от настроек)
+    if (graphicsSettings.particles) {
+      bgCtx.fillStyle = 'rgba(255,255,255,0.3)';
+      const starCount = graphicsSettings.preset === 'high' ? 40 : (graphicsSettings.preset === 'medium' ? 25 : 15);
+      for (let i = 0; i < starCount; i++) {
+        const sx = ((i * 137 + 17) % COSMO_W);
+        const sy = ((i * 83 + 31) % COSMO_H);
+        const sr = graphicsSettings.preset === 'high' ? (i % 3 === 0 ? 1.5 : 0.8) : 1;
+        bgCtx.beginPath();
+        bgCtx.arc(sx, sy, sr, 0, Math.PI * 2);
+        bgCtx.fill();
+      }
+    }
+
+    // Center line
+    bgCtx.setLineDash([8, 8]);
+    bgCtx.strokeStyle = '#ec489933';
+    bgCtx.lineWidth = 2;
+    bgCtx.beginPath();
+    bgCtx.moveTo(0, COSMO_H / 2);
+    bgCtx.lineTo(COSMO_W, COSMO_H / 2);
+    bgCtx.stroke();
+    bgCtx.setLineDash([]);
+
+    cosmoPvPBgCache = bgCanvas;
   }
 
-  // Center line
-  ctx.setLineDash([8, 8]);
-  ctx.strokeStyle = '#ec489933';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, COSMO_H / 2); ctx.lineTo(COSMO_W, COSMO_H / 2); ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.drawImage(cosmoPvPBgCache, 0, 0);
 
   // Гаджеты (ловушки заморозки)
   for (const g of csGadgets) {
     ctx.globalAlpha = 1;
-    ctx.shadowColor = '#60a5fa';
-    ctx.shadowBlur = 14;
-    const rg = ctx.createRadialGradient(g.x, g.y, 2, g.x, g.y, COSMO_GADGET_R);
-    rg.addColorStop(0, 'rgba(147,210,255,0.9)');
-    rg.addColorStop(1, 'rgba(59,130,246,0.3)');
-    ctx.fillStyle = rg;
-    ctx.beginPath(); ctx.arc(g.x, g.y, COSMO_GADGET_R, 0, Math.PI * 2); ctx.fill();
-    ctx.shadowBlur = 0;
+    if (graphicsSettings.effects) {
+      ctx.shadowColor = '#60a5fa';
+      ctx.shadowBlur = graphicsSettings.preset === 'high' ? 14 : 8;
+      const rg = ctx.createRadialGradient(g.x, g.y, 2, g.x, g.y, COSMO_GADGET_R);
+      rg.addColorStop(0, 'rgba(147,210,255,0.9)');
+      rg.addColorStop(1, 'rgba(59,130,246,0.3)');
+      ctx.fillStyle = rg;
+    } else {
+      ctx.fillStyle = 'rgba(147,210,255,0.8)';
+    }
+    ctx.beginPath();
+    ctx.arc(g.x, g.y, COSMO_GADGET_R, 0, Math.PI * 2);
+    ctx.fill();
+    if (graphicsSettings.effects) ctx.shadowBlur = 0;
     ctx.font = (COSMO_GADGET_R * 1.4) + 'px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -5078,23 +5596,46 @@ function drawCosmoPvP() {
   // Гранаты
   for (const gr of csGrenades) {
     ctx.globalAlpha = 1;
-    ctx.shadowColor = '#f97316';
-    ctx.shadowBlur = 16;
-    const grg = ctx.createRadialGradient(gr.x, gr.y, 2, gr.x, gr.y, COSMO_GRENADE_R);
-    grg.addColorStop(0, 'rgba(255,150,50,0.95)');
-    grg.addColorStop(1, 'rgba(185,28,28,0.3)');
-    ctx.fillStyle = grg;
-    ctx.beginPath(); ctx.arc(gr.x, gr.y, COSMO_GRENADE_R, 0, Math.PI*2); ctx.fill();
-    ctx.shadowBlur = 0;
+    if (graphicsSettings.effects) {
+      ctx.shadowColor = '#f97316';
+      ctx.shadowBlur = graphicsSettings.preset === 'high' ? 16 : 10;
+      const grg = ctx.createRadialGradient(gr.x, gr.y, 2, gr.x, gr.y, COSMO_GRENADE_R);
+      grg.addColorStop(0, 'rgba(255,150,50,0.95)');
+      grg.addColorStop(1, 'rgba(185,28,28,0.3)');
+      ctx.fillStyle = grg;
+    } else {
+      ctx.fillStyle = 'rgba(255,150,50,0.9)';
+    }
+    ctx.beginPath();
+    ctx.arc(gr.x, gr.y, COSMO_GRENADE_R, 0, Math.PI*2);
+    ctx.fill();
+    if (graphicsSettings.effects) ctx.shadowBlur = 0;
     ctx.font = (COSMO_GRENADE_R * 1.5) + 'px serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.fillText('💣', gr.x, gr.y);
     ctx.textBaseline = 'alphabetic';
   }
 
-  // Paddles
-  ctx.fillStyle = '#ec4899';
+  // Paddles с градиентами
+  if (graphicsSettings.effects && graphicsSettings.preset !== 'low') {
+    const playerGrad = ctx.createLinearGradient(csPlayerPaddle.x, csPlayerPaddle.y, csPlayerPaddle.x + COSMO_PADDLE_W, csPlayerPaddle.y);
+    playerGrad.addColorStop(0, '#ec4899');
+    playerGrad.addColorStop(1, '#be185d');
+    ctx.fillStyle = playerGrad;
+  } else {
+    ctx.fillStyle = '#ec4899';
+  }
   ctx.fillRect(csPlayerPaddle.x, csPlayerPaddle.y, COSMO_PADDLE_W, COSMO_PADDLE_H);
+
+  if (graphicsSettings.effects && graphicsSettings.preset !== 'low') {
+    const botGrad = ctx.createLinearGradient(csBotPaddle.x, csBotPaddle.y, csBotPaddle.x + COSMO_PADDLE_W, csBotPaddle.y);
+    botGrad.addColorStop(0, '#6366f1');
+    botGrad.addColorStop(1, '#4f46e5');
+    ctx.fillStyle = botGrad;
+  } else {
+    ctx.fillStyle = '#6366f1';
+  }
   ctx.fillRect(csBotPaddle.x, csBotPaddle.y, COSMO_PADDLE_W, COSMO_PADDLE_H);
 
   // Ball (голова Дмитрия или обычный мяч)
@@ -5110,34 +5651,42 @@ function drawCosmoPvP() {
     ctx.fill();
   }
 
-  // Ball glow
-  const grad = ctx.createRadialGradient(csBall.x, csBall.y, 0, csBall.x, csBall.y, COSMO_BALL_R * 2);
-  grad.addColorStop(0, 'rgba(255,255,255,0.3)');
-  grad.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(csBall.x, csBall.y, COSMO_BALL_R * 2, 0, Math.PI * 2);
-  ctx.fill();
+  // Ball glow (только если эффекты включены)
+  if (graphicsSettings.effects && graphicsSettings.preset !== 'low') {
+    const grad = ctx.createRadialGradient(csBall.x, csBall.y, 0, csBall.x, csBall.y, COSMO_BALL_R * 2);
+    grad.addColorStop(0, 'rgba(255,255,255,0.3)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(csBall.x, csBall.y, COSMO_BALL_R * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
   // Эффект заморозки мяча
   if (csBallFrozen) {
     ctx.globalAlpha = 0.7;
     ctx.strokeStyle = '#60a5fa';
     ctx.lineWidth = 3;
+    if (graphicsSettings.effects) {
+      ctx.shadowColor = '#60a5fa';
+      ctx.shadowBlur = 10;
+    }
     ctx.beginPath();
     ctx.arc(csBall.x, csBall.y, COSMO_BALL_R + 5, 0, Math.PI * 2);
     ctx.stroke();
+    if (graphicsSettings.effects) ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
   }
 
   // Эффект молнии от ульты
-  if (csLightningTime > 0) {
+  if (csLightningTime > 0 && graphicsSettings.effects && graphicsSettings.preset !== 'low') {
     ctx.globalAlpha = csLightningTime / 30;
     ctx.strokeStyle = '#fbbf24';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = graphicsSettings.preset === 'high' ? 4 : 3;
     ctx.shadowColor = '#fbbf24';
-    ctx.shadowBlur = 20;
-    for (let i = 0; i < 3; i++) {
+    ctx.shadowBlur = graphicsSettings.preset === 'high' ? 20 : 12;
+    const lightningCount = graphicsSettings.preset === 'high' ? 3 : 2;
+    for (let i = 0; i < lightningCount; i++) {
       ctx.beginPath();
       ctx.moveTo(csBall.x, csBall.y);
       ctx.lineTo(csBall.x + (Math.random() - 0.5) * 60, csBall.y + (Math.random() - 0.5) * 60);
@@ -5145,6 +5694,14 @@ function drawCosmoPvP() {
     }
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
+  }
+
+  // FPS индикатор
+  if (graphicsSettings.showFps) {
+    ctx.fillStyle = pvpCurrentFps >= 55 ? '#22c55e' : (pvpCurrentFps >= 40 ? '#f59e0b' : '#ef4444');
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`FPS: ${pvpCurrentFps}`, 5, 12);
   }
 }
 
