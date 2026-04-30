@@ -68,7 +68,8 @@ const COSMO_ULT_BOOST = 1.6;
 const COSMO_GADGET_R = 14;
 const COSMO_GADGET_FREEZE_MS = 2200;
 const COSMO_GRENADE_R = 12;
-const COSMO_GRENADE_SPAWN_CHANCE = 0.004;
+const COSMO_GRENADE_SPAWN_CHANCE = 0.002; // Уменьшено с 0.004 для меньшей нагрузки
+const COSMO_MAX_GRENADES = 2; // Максимум гранат на поле
 
 class Game {
   constructor(player1, player2, difficulty) {
@@ -262,8 +263,8 @@ class Game {
       }
     }
 
-    // Спавн гранат
-    if (Math.random() < COSMO_GRENADE_SPAWN_CHANCE) {
+    // Спавн гранат (с ограничением максимального количества)
+    if (this.grenades.length < COSMO_MAX_GRENADES && Math.random() < COSMO_GRENADE_SPAWN_CHANCE) {
       const side = Math.floor(Math.random() * 4);
       let gx, gy, gvx, gvy;
       if (side === 0) { // слева
@@ -321,13 +322,16 @@ class Game {
 
   getState() {
     return {
-      ball: this.ball,
-      paddle1: this.paddle1,
-      paddle2: this.paddle2,
+      ball: {
+        x: Math.round(this.ball.x * 10) / 10, // Округляем до 1 знака после запятой
+        y: Math.round(this.ball.y * 10) / 10,
+        vx: Math.round(this.ball.vx * 10) / 10,
+        vy: Math.round(this.ball.vy * 10) / 10
+      },
+      paddle1: { x: Math.round(this.paddle1.x) }, // Только x координата, y статична
+      paddle2: { x: Math.round(this.paddle2.x) },
       score1: this.score1,
       score2: this.score2,
-      gameOver: this.gameOver,
-      winner: this.winner,
       ult1Available: this.ult1Available,
       ult1Used: this.ult1Used,
       ult1Hits: this.ult1Hits,
@@ -336,8 +340,8 @@ class Game {
       ult2Used: this.ult2Used,
       ult2Hits: this.ult2Hits,
       lightningTime2: this.lightningTime2,
-      gadgets: this.gadgets,
-      grenades: this.grenades,
+      gadgets: this.gadgets.map(g => ({ x: Math.round(g.x), y: Math.round(g.y) })),
+      grenades: this.grenades.map(gr => ({ x: Math.round(gr.x), y: Math.round(gr.y) })),
       ballFrozen: this.ballFrozen,
       whiteFlash: this.whiteFlash
     };
@@ -629,15 +633,19 @@ setInterval(() => {
 }, 60000); // Каждую минуту
 
 // Игровой цикл - обновление всех активных игр
+let frameCounter = 0;
 setInterval(() => {
+  frameCounter++;
   activeGames.forEach((game, gameId) => {
     if (game.started && !game.gameOver) {
       game.update();
 
-      // Отправляем состояние обоим игрокам
-      const state = game.getState();
-      io.to(game.player1).emit('game-state', state);
-      io.to(game.player2).emit('game-state', state);
+      // Отправляем состояние каждый 3-й кадр (~40 FPS для сети, экономия трафика)
+      if (frameCounter % 3 === 0) {
+        const state = game.getState();
+        io.to(game.player1).emit('game-state', state);
+        io.to(game.player2).emit('game-state', state);
+      }
 
       // Если игра закончилась
       if (game.gameOver) {
