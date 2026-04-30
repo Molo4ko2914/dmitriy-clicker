@@ -804,9 +804,22 @@
   .lb-card.top3 { border-color: #cd7f3244; }
   .lb-card.me { border-color: #e9456066; }
   .lb-rank { font-family: 'Russo One', sans-serif; font-size: 18px; width: 32px; text-align: center; flex-shrink: 0; }
-  .lb-name { flex: 1; font-weight: 700; font-size: 14px; }
+  .lb-name { flex: 1; font-weight: 700; font-size: 14px; position: relative; }
   .lb-coins { font-family: 'Russo One', sans-serif; font-size: 14px; color: var(--gold); }
   .lb-loading { text-align: center; color: var(--muted); padding: 30px; font-size: 14px; }
+
+  /* Online indicator in leaderboard */
+  .online-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    margin-right: 6px;
+    box-shadow: 0 0 8px #22c55e;
+    animation: pulse 2s ease-in-out infinite;
+    vertical-align: middle;
+  }
   .refresh-btn {
     display: block; margin: 0 auto 12px;
     padding: 8px 20px; background: var(--card); border: 1px solid #ffffff15;
@@ -1269,6 +1282,75 @@
   .cosmo-diff-medium { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
   .cosmo-diff-hard { background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff; }
   .cosmo-diff-btn:hover { transform: scale(1.03); }
+
+  /* PvP Tables */
+  .pvp-table {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .pvp-table:hover {
+    transform: translateY(-2px);
+    border-color: #ec4899;
+    box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
+  }
+  .pvp-table.waiting {
+    border-color: #22c55e44;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), transparent);
+  }
+  .pvp-table.full {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .pvp-table.full:hover {
+    transform: none;
+    border-color: var(--glass-border);
+  }
+  .pvp-table-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+  .pvp-table-info {
+    flex: 1;
+    text-align: left;
+  }
+  .pvp-table-name {
+    font-family: 'Russo One', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .pvp-table-status {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .pvp-table-status.waiting {
+    color: #22c55e;
+  }
+  .pvp-table-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ec4899, #be185d);
+    color: white;
+    transition: all 0.2s;
+  }
+  .pvp-table-btn:hover {
+    transform: scale(1.05);
+  }
+
   .cosmo-ult-bar {
     display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 0 2px;
   }
@@ -2118,8 +2200,19 @@
       <button class="cosmo-diff-btn cosmo-diff-easy" onclick="startCosmo('easy')">😊 ЛЁГКАЯ — 50 000 монет</button>
       <button class="cosmo-diff-btn cosmo-diff-medium" onclick="startCosmo('medium')">⚡ СРЕДНЯЯ — 100 000 монет</button>
       <button class="cosmo-diff-btn cosmo-diff-hard" onclick="startCosmo('hard')">💀 ХАРДКОР — 200 000 монет</button>
-      <button class="cosmo-diff-btn" style="background:linear-gradient(135deg,#ec4899,#be185d);color:#fff;margin-top:8px;border:2px solid #ec489966" onclick="startCosmoPvP()">⚔️ PvP РЕЖИМ — Играй с игроками!</button>
+      <button class="cosmo-diff-btn" style="background:linear-gradient(135deg,#ec4899,#be185d);color:#fff;margin-top:8px;border:2px solid #ec489966" onclick="openCosmoPvPLobby()">⚔️ PvP ЛОББИ — Играй с игроками!</button>
       <button style="background:#1a0030;border:1px solid #ec489933;color:#ec4899;border-radius:10px;padding:8px;width:100%;font-family:'Russo One',sans-serif;font-size:11px;cursor:pointer;margin-top:4px" onclick="closeCosmo()">ЗАКРЫТЬ</button>
+    </div>
+
+    <!-- PvP Lobby Screen -->
+    <div id="cosmo-pvp-lobby" style="display:none;padding:10px 0">
+      <div class="cosmo-diff-title">⚔️ PvP ЛОББИ</div>
+      <div class="cosmo-diff-sub">Выбери стол или создай свой</div>
+      <div id="pvp-tables-list" style="max-height:300px;overflow-y:auto;margin-bottom:12px">
+        <div class="lb-loading">⏳ Загрузка столов...</div>
+      </div>
+      <button class="cosmo-diff-btn cosmo-diff-easy" onclick="createPvPTable()">➕ СОЗДАТЬ СТОЛ</button>
+      <button style="background:#1a0030;border:1px solid #ec489933;color:#ec4899;border-radius:10px;padding:8px;width:100%;font-family:'Russo One',sans-serif;font-size:11px;cursor:pointer;margin-top:4px" onclick="closePvPLobby()">НАЗАД</button>
     </div>
     <!-- Game screen (hidden until start) -->
     <div id="cosmo-game-screen" style="display:none">
@@ -2608,6 +2701,15 @@ async function loadLeaderboard(type = 'coins') {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     const data = await res.json();
+
+    // Получаем список онлайн игроков
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const onlineRes = await fetch(`${SUPABASE_URL}/rest/v1/scores?select=user_id&last_active=gte.${fiveMinutesAgo}`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const onlineData = await onlineRes.json();
+    const onlineUserIds = new Set(onlineData.map(u => u.user_id));
+
     const medals = ['🥇','🥈','🥉'];
     let html = subtabsHtml + '<button class="refresh-btn" onclick="loadLeaderboard(\'' + type + '\')">🔄 Обновить</button>';
 
@@ -2616,6 +2718,7 @@ async function loadLeaderboard(type = 'coins') {
     } else {
       data.forEach((row, i) => {
         const isMe = tgUser && row.user_id == tgUser.id;
+        const isOnline = onlineUserIds.has(row.user_id);
         const cls = [i===0?'top1':i===1?'top2':i===2?'top3':'', isMe?'me':''].join(' ');
 
         let displayValue = '';
@@ -2627,9 +2730,11 @@ async function loadLeaderboard(type = 'coins') {
           displayValue = `🔄 ${row.rebirths || 0}`;
         }
 
+        const onlineIndicator = isOnline ? '<span class="online-dot" title="Онлайн"></span>' : '';
+
         html += `<div class="lb-card ${cls}">
           <div class="lb-rank">${i < 3 ? medals[i] : '#'+(i+1)}</div>
-          <div class="lb-name">${row.username || 'Игрок'}${isMe?' (ты)':''}</div>
+          <div class="lb-name">${onlineIndicator}${row.username || 'Игрок'}${isMe?' (ты)':''}</div>
           <div class="lb-coins">${displayValue}</div>
         </div>`;
       });
@@ -4679,125 +4784,156 @@ function cosmoDraw() {
 }
 
 // ===== COSMO PvP MODE =====
-const COSMO_SERVER_URL = 'http://localhost:3000'; // Измени на свой сервер
+// ВАЖНО: Замени этот URL на свой Railway URL!
+const COSMO_SERVER_URL = 'dmitriy-clicker-production.up.railway.app'; // Измени на URL из Railway!
 let cosmoPvPSocket = null;
 let cosmoPvPMode = false;
 let cosmoPvPGameId = null;
 let cosmoPvPPlayerNum = null;
 let cosmoPvPOpponent = null;
+let cosmoPvPTables = [];
+let cosmoPvPMyTableId = null;
 
-function startCosmoPvP() {
+// Открытие лобби
+function openCosmoPvPLobby() {
   if (!tgUser) {
     showToast('❌ Нужен Telegram для PvP режима!');
     return;
   }
 
-  cosmoPvPMode = true;
   document.getElementById('cosmo-diff-screen').style.display = 'none';
-
-  // Показываем экран поиска
-  showCosmoPvPSearching();
+  document.getElementById('cosmo-pvp-lobby').style.display = 'block';
 
   // Подключаемся к серверу
+  connectToPvPServer();
+  loadPvPTables();
+}
+
+function closePvPLobby() {
+  document.getElementById('cosmo-pvp-lobby').style.display = 'none';
+  document.getElementById('cosmo-diff-screen').style.display = 'block';
+}
+
+function connectToPvPServer() {
+  if (cosmoPvPSocket && cosmoPvPSocket.connected) return;
+
+  cosmoPvPSocket = io(COSMO_SERVER_URL);
+
+  cosmoPvPSocket.on('connect', () => {
+    console.log('Connected to PvP server');
+  });
+
+  cosmoPvPSocket.on('tables-update', (tables) => {
+    cosmoPvPTables = tables;
+    renderPvPTables();
+  });
+
+  cosmoPvPSocket.on('table-joined', (data) => {
+    cosmoPvPMyTableId = data.tableId;
+    showToast(`✅ Присоединился к столу: ${data.tableName}`);
+  });
+
+  cosmoPvPSocket.on('match-start', (data) => {
+    cosmoPvPGameId = data.gameId;
+    cosmoPvPPlayerNum = data.playerNum;
+    cosmoPvPOpponent = data.opponent;
+    startCosmoPvPGame();
+  });
+
+  cosmoPvPSocket.on('game-state', (state) => {
+    updateCosmoPvPGameState(state);
+  });
+
+  cosmoPvPSocket.on('game-over', (data) => {
+    endCosmoPvPGame(data);
+  });
+
+  cosmoPvPSocket.on('opponent-disconnected', () => {
+    showToast('⚠️ Соперник отключился!');
+    setTimeout(() => {
+      closeCosmo();
+    }, 2000);
+  });
+
+  cosmoPvPSocket.on('connect_error', (error) => {
+    console.error('Connection error:', error);
+    showToast('❌ Не удалось подключиться к серверу!');
+  });
+}
+
+function loadPvPTables() {
   if (!cosmoPvPSocket || !cosmoPvPSocket.connected) {
-    cosmoPvPSocket = io(COSMO_SERVER_URL);
-
-    cosmoPvPSocket.on('connect', () => {
-      console.log('Connected to PvP server');
-      // Ищем матч
-      cosmoPvPSocket.emit('find-match', {
-        username: tgUser.username || tgUser.first_name || 'Игрок',
-        difficulty: 'pvp'
-      });
-    });
-
-    cosmoPvPSocket.on('searching', (data) => {
-      updateCosmoPvPSearching(data.queueSize);
-    });
-
-    cosmoPvPSocket.on('match-found', (data) => {
-      cosmoPvPGameId = data.gameId;
-      cosmoPvPPlayerNum = data.playerNum;
-      cosmoPvPOpponent = data.opponent;
-      showCosmoPvPMatchFound(data);
-    });
-
-    cosmoPvPSocket.on('game-start', () => {
-      startCosmoPvPGame();
-    });
-
-    cosmoPvPSocket.on('game-state', (state) => {
-      updateCosmoPvPGameState(state);
-    });
-
-    cosmoPvPSocket.on('game-over', (data) => {
-      endCosmoPvPGame(data);
-    });
-
-    cosmoPvPSocket.on('opponent-disconnected', () => {
-      showToast('⚠️ Соперник отключился!');
-      setTimeout(() => {
-        closeCosmo();
-      }, 2000);
-    });
-
-    cosmoPvPSocket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
-      showToast('❌ Не удалось подключиться к серверу!');
-      setTimeout(() => {
-        closeCosmo();
-      }, 2000);
-    });
-  } else {
-    cosmoPvPSocket.emit('find-match', {
-      username: tgUser.username || tgUser.first_name || 'Игрок',
-      difficulty: 'pvp'
-    });
+    setTimeout(loadPvPTables, 500);
+    return;
   }
+  cosmoPvPSocket.emit('get-tables');
 }
 
-function showCosmoPvPSearching() {
-  const overlay = document.getElementById('cosmo-overlay');
-  const diffScreen = document.getElementById('cosmo-diff-screen');
+function renderPvPTables() {
+  const container = document.getElementById('pvp-tables-list');
 
-  diffScreen.innerHTML = `
-    <div class="cosmo-diff-title">⚔️ PvP РЕЖИМ</div>
-    <div style="font-size:48px;margin:20px 0;animation:spin 2s linear infinite">🔍</div>
-    <div style="font-size:14px;color:var(--text);margin-bottom:10px">Ищем соперника...</div>
-    <div id="pvp-queue-info" style="font-size:12px;color:var(--muted);margin-bottom:20px">Игроков в очереди: ...</div>
-    <button class="cosmo-diff-btn" style="background:#ef4444;color:#fff" onclick="cancelCosmoPvPSearch()">ОТМЕНИТЬ</button>
-  `;
-  diffScreen.style.display = 'block';
-}
-
-function updateCosmoPvPSearching(queueSize) {
-  const info = document.getElementById('pvp-queue-info');
-  if (info) {
-    info.textContent = `Игроков в очереди: ${queueSize}`;
+  if (!cosmoPvPTables || cosmoPvPTables.length === 0) {
+    container.innerHTML = '<div class="lb-loading">Нет доступных столов. Создай первый! 🎮</div>';
+    return;
   }
+
+  let html = '';
+  cosmoPvPTables.forEach(table => {
+    const isFull = table.players >= 2;
+    const isWaiting = table.players === 1;
+    const isEmpty = table.players === 0;
+
+    let statusText = '';
+    let statusClass = '';
+    let icon = '🪑';
+
+    if (isFull) {
+      statusText = 'Идёт игра';
+      statusClass = '';
+      icon = '⚔️';
+    } else if (isWaiting) {
+      statusText = `${table.creator} ждёт соперника`;
+      statusClass = 'waiting';
+      icon = '⏳';
+    } else {
+      statusText = 'Пустой стол';
+      icon = '🪑';
+    }
+
+    html += `
+      <div class="pvp-table ${isWaiting ? 'waiting' : ''} ${isFull ? 'full' : ''}" onclick="${isFull ? '' : `joinPvPTable('${table.id}')`}">
+        <div class="pvp-table-icon">${icon}</div>
+        <div class="pvp-table-info">
+          <div class="pvp-table-name">Стол #${table.id.substr(-4)}</div>
+          <div class="pvp-table-status ${statusClass}">${statusText}</div>
+        </div>
+        ${!isFull ? '<button class="pvp-table-btn" onclick="event.stopPropagation(); joinPvPTable(\'' + table.id + '\')">СЕСТЬ</button>' : ''}
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
 }
 
-function showCosmoPvPMatchFound(data) {
-  const diffScreen = document.getElementById('cosmo-diff-screen');
+function createPvPTable() {
+  if (!cosmoPvPSocket || !cosmoPvPSocket.connected) {
+    showToast('❌ Нет подключения к серверу!');
+    return;
+  }
 
-  diffScreen.innerHTML = `
-    <div class="cosmo-diff-title">⚔️ МАТЧ НАЙДЕН!</div>
-    <div style="font-size:48px;margin:20px 0">🎮</div>
-    <div style="font-size:16px;color:var(--text);margin-bottom:10px;font-weight:700">Соперник: ${data.opponent}</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Ты играешь ${data.playerNum === 1 ? 'снизу' : 'сверху'}</div>
-    <button class="cosmo-diff-btn cosmo-diff-easy" onclick="readyCosmoPvP()">✅ ГОТОВ!</button>
-  `;
+  const username = tgUser.username || tgUser.first_name || 'Игрок';
+  cosmoPvPSocket.emit('create-table', { username });
+  showToast('✅ Стол создан! Ожидание соперника...');
 }
 
-function readyCosmoPvP() {
-  cosmoPvPSocket.emit('player-ready');
+function joinPvPTable(tableId) {
+  if (!cosmoPvPSocket || !cosmoPvPSocket.connected) {
+    showToast('❌ Нет подключения к серверу!');
+    return;
+  }
 
-  const diffScreen = document.getElementById('cosmo-diff-screen');
-  diffScreen.innerHTML = `
-    <div class="cosmo-diff-title">⚔️ ОЖИДАНИЕ</div>
-    <div style="font-size:48px;margin:20px 0">⏳</div>
-    <div style="font-size:14px;color:var(--text)">Ждём соперника...</div>
-  `;
+  const username = tgUser.username || tgUser.first_name || 'Игрок';
+  cosmoPvPSocket.emit('join-table', { tableId, username });
 }
 
 function startCosmoPvPGame() {
