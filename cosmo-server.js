@@ -63,6 +63,12 @@ const COSMO_PADDLE_W = 70;
 const COSMO_PADDLE_H = 12;
 const COSMO_BALL_R = 18;
 const COSMO_WIN = 9;
+const COSMO_ULT_HITS = 15;
+const COSMO_ULT_BOOST = 1.6;
+const COSMO_GADGET_R = 14;
+const COSMO_GADGET_FREEZE_MS = 2200;
+const COSMO_GRENADE_R = 12;
+const COSMO_GRENADE_SPAWN_CHANCE = 0.004;
 
 class Game {
   constructor(player1, player2, difficulty) {
@@ -90,6 +96,30 @@ class Game {
     this.winner = null;
 
     this.lastUpdate = Date.now();
+
+    // Механики ульты
+    this.ult1Available = false;
+    this.ult1Used = false;
+    this.ult1Hits = 0;
+    this.ult1PendingHit = false;
+    this.lightningTime1 = 0;
+
+    this.ult2Available = false;
+    this.ult2Used = false;
+    this.ult2Hits = 0;
+    this.ult2PendingHit = false;
+    this.lightningTime2 = 0;
+
+    // Гаджеты (ловушки заморозки)
+    this.gadgets = [];
+    this.ballFrozen = false;
+    this.ballFreezeTimer = 0;
+    this.ballFreezeVx = 0;
+    this.ballFreezeVy = 0;
+
+    // Гранаты
+    this.grenades = [];
+    this.whiteFlash = 0;
   }
 
   start() {
@@ -105,12 +135,24 @@ class Game {
     if (!this.started || this.gameOver) return;
 
     const now = Date.now();
-    const dt = (now - this.lastUpdate) / 16.67; // Нормализация к 60 FPS
+    const dt = (now - this.lastUpdate) / 8.33; // Нормализация к 120 FPS
     this.lastUpdate = now;
 
-    // Обновление позиции мяча
-    this.ball.x += this.ball.vx * dt;
-    this.ball.y += this.ball.vy * dt;
+    // Обновление заморозки мяча
+    if (this.ballFrozen) {
+      this.ballFreezeTimer -= dt * 8.33;
+      if (this.ballFreezeTimer <= 0) {
+        this.ballFrozen = false;
+        this.ball.vx = this.ballFreezeVx;
+        this.ball.vy = this.ballFreezeVy;
+      }
+    }
+
+    // Обновление позиции мяча (если не заморожен)
+    if (!this.ballFrozen) {
+      this.ball.x += this.ball.vx * dt;
+      this.ball.y += this.ball.vy * dt;
+    }
 
     // Отскок от стен
     if (this.ball.x - COSMO_BALL_R < 0 || this.ball.x + COSMO_BALL_R > COSMO_W) {
@@ -127,6 +169,23 @@ class Game {
       this.ball.vy = -Math.abs(this.ball.vy);
       const hitPos = (this.ball.x - this.paddle1.x) / COSMO_PADDLE_W - 0.5;
       this.ball.vx += hitPos * 2;
+
+      // Ульта игрока 1
+      if (this.ult1PendingHit) {
+        this.ball.vx *= COSMO_ULT_BOOST;
+        this.ball.vy *= COSMO_ULT_BOOST;
+        this.ult1PendingHit = false;
+        this.ult1Used = true;
+        this.ult1Available = false;
+        this.lightningTime1 = 30;
+      }
+
+      // Счётчик хитов для ульты
+      this.ult1Hits++;
+      if (this.ult1Hits >= COSMO_ULT_HITS && !this.ult1Available && !this.ult1Used) {
+        this.ult1Available = true;
+        this.ult1Hits = 0;
+      }
     }
 
     // Игрок 2 (вверху)
@@ -137,7 +196,96 @@ class Game {
       this.ball.vy = Math.abs(this.ball.vy);
       const hitPos = (this.ball.x - this.paddle2.x) / COSMO_PADDLE_W - 0.5;
       this.ball.vx += hitPos * 2;
+
+      // Ульта игрока 2
+      if (this.ult2PendingHit) {
+        this.ball.vx *= COSMO_ULT_BOOST;
+        this.ball.vy *= COSMO_ULT_BOOST;
+        this.ult2PendingHit = false;
+        this.ult2Used = true;
+        this.ult2Available = false;
+        this.lightningTime2 = 30;
+      }
+
+      // Счётчик хитов для ульты
+      this.ult2Hits++;
+      if (this.ult2Hits >= COSMO_ULT_HITS && !this.ult2Available && !this.ult2Used) {
+        this.ult2Available = true;
+        this.ult2Hits = 0;
+      }
     }
+
+    // Столкновение с гаджетами (ловушками)
+    for (let i = this.gadgets.length - 1; i >= 0; i--) {
+      const g = this.gadgets[i];
+      const dx = this.ball.x - g.x;
+      const dy = this.ball.y - g.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < COSMO_BALL_R + COSMO_GADGET_R) {
+        // Заморозка мяча
+        if (!this.ballFrozen) {
+          this.ballFrozen = true;
+          this.ballFreezeTimer = COSMO_GADGET_FREEZE_MS;
+          this.ballFreezeVx = this.ball.vx;
+          this.ballFreezeVy = this.ball.vy;
+          this.ball.vx = 0;
+          this.ball.vy = 0;
+        }
+        this.gadgets.splice(i, 1);
+      }
+    }
+
+    // Столкновение с гранатами
+    for (let i = this.grenades.length - 1; i >= 0; i--) {
+      const gr = this.grenades[i];
+      const dx = this.ball.x - gr.x;
+      const dy = this.ball.y - gr.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < COSMO_BALL_R + COSMO_GRENADE_R) {
+        // Взрыв - отбрасываем мяч
+        const angle = Math.atan2(dy, dx);
+        const force = 8;
+        this.ball.vx = Math.cos(angle) * force;
+        this.ball.vy = Math.sin(angle) * force;
+        this.whiteFlash = 10;
+        this.grenades.splice(i, 1);
+      }
+    }
+
+    // Обновление гранат (движение)
+    for (const gr of this.grenades) {
+      gr.x += gr.vx * dt;
+      gr.y += gr.vy * dt;
+      // Удаляем гранаты за пределами поля
+      if (gr.x < -50 || gr.x > COSMO_W + 50 || gr.y < -50 || gr.y > COSMO_H + 50) {
+        this.grenades = this.grenades.filter(g => g !== gr);
+      }
+    }
+
+    // Спавн гранат
+    if (Math.random() < COSMO_GRENADE_SPAWN_CHANCE) {
+      const side = Math.floor(Math.random() * 4);
+      let gx, gy, gvx, gvy;
+      if (side === 0) { // слева
+        gx = -20; gy = Math.random() * COSMO_H;
+        gvx = 2 + Math.random() * 2; gvy = (Math.random() - 0.5) * 2;
+      } else if (side === 1) { // справа
+        gx = COSMO_W + 20; gy = Math.random() * COSMO_H;
+        gvx = -(2 + Math.random() * 2); gvy = (Math.random() - 0.5) * 2;
+      } else if (side === 2) { // сверху
+        gx = Math.random() * COSMO_W; gy = -20;
+        gvx = (Math.random() - 0.5) * 2; gvy = 2 + Math.random() * 2;
+      } else { // снизу
+        gx = Math.random() * COSMO_W; gy = COSMO_H + 20;
+        gvx = (Math.random() - 0.5) * 2; gvy = -(2 + Math.random() * 2);
+      }
+      this.grenades.push({ x: gx, y: gy, vx: gvx, vy: gvy });
+    }
+
+    // Уменьшение таймеров анимаций
+    if (this.lightningTime1 > 0) this.lightningTime1--;
+    if (this.lightningTime2 > 0) this.lightningTime2--;
+    if (this.whiteFlash > 0) this.whiteFlash--;
 
     // Гол
     if (this.ball.y - COSMO_BALL_R < 0) {
@@ -179,7 +327,19 @@ class Game {
       score1: this.score1,
       score2: this.score2,
       gameOver: this.gameOver,
-      winner: this.winner
+      winner: this.winner,
+      ult1Available: this.ult1Available,
+      ult1Used: this.ult1Used,
+      ult1Hits: this.ult1Hits,
+      lightningTime1: this.lightningTime1,
+      ult2Available: this.ult2Available,
+      ult2Used: this.ult2Used,
+      ult2Hits: this.ult2Hits,
+      lightningTime2: this.lightningTime2,
+      gadgets: this.gadgets,
+      grenades: this.grenades,
+      ballFrozen: this.ballFrozen,
+      whiteFlash: this.whiteFlash
     };
   }
 }
@@ -300,6 +460,7 @@ io.on('connection', (socket) => {
 
     // Создаём игру
     const game = new Game(table.players[0], table.players[1], 'pvp');
+    game.tableId = tableId; // Связываем игру со столом
     activeGames.set(game.id, game);
 
     // Связываем сокеты с игрой
@@ -375,6 +536,29 @@ io.on('connection', (socket) => {
       game.paddle1.x = Math.max(0, Math.min(COSMO_W - COSMO_PADDLE_W, data.x));
     } else if (socket.playerNum === 2) {
       game.paddle2.x = Math.max(0, Math.min(COSMO_W - COSMO_PADDLE_W, data.x));
+    }
+  });
+
+  // Активация ульты
+  socket.on('use-ult', () => {
+    const game = activeGames.get(socket.gameId);
+    if (!game || game.gameOver) return;
+
+    if (socket.playerNum === 1 && game.ult1Available && !game.ult1Used) {
+      game.ult1PendingHit = true;
+    } else if (socket.playerNum === 2 && game.ult2Available && !game.ult2Used) {
+      game.ult2PendingHit = true;
+    }
+  });
+
+  // Размещение гаджета (ловушки)
+  socket.on('place-gadget', (data) => {
+    const game = activeGames.get(socket.gameId);
+    if (!game || game.gameOver) return;
+
+    // Ограничение: максимум 3 гаджета на поле
+    if (game.gadgets.length < 3) {
+      game.gadgets.push({ x: data.x, y: data.y });
     }
   });
 
@@ -470,6 +654,13 @@ setInterval(() => {
 
         console.log(`Game ${gameId} ended. Winner: ${game.winner}`);
 
+        // Удаляем стол, связанный с этой игрой
+        if (game.tableId && pvpTables.has(game.tableId)) {
+          pvpTables.delete(game.tableId);
+          console.log(`Table ${game.tableId} removed (game ended)`);
+          broadcastTables();
+        }
+
         // Удаляем игру через 5 секунд
         setTimeout(() => {
           activeGames.delete(gameId);
@@ -477,7 +668,7 @@ setInterval(() => {
       }
     }
   });
-}, 16); // ~60 FPS
+}, 8); // ~120 FPS (1000ms / 120 = 8.33ms)
 
 // Статус сервера
 app.get('/status', (req, res) => {
