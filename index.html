@@ -3284,7 +3284,7 @@ function updateUI() {
 
 // Функция расчета множителя от перерождений
 function getRebirthMultiplier() {
-  return 1 + (state.rebirths * 0.1); // +10% за каждое перерождение
+  return 1 + (state.rebirths * 0.25); // +25% за каждое перерождение
 }
 
 // Функция расчета стоимости перерождения
@@ -3302,7 +3302,7 @@ function performRebirth() {
   }
 
   // Подтверждение
-  if (!confirm(`🔄 Переродиться?\n\nТы потеряешь все монеты и улучшения, но получишь +10% к доходу навсегда!\n\nТекущий множитель: x${getRebirthMultiplier().toFixed(1)}\nНовый множитель: x${(getRebirthMultiplier() + 0.1).toFixed(1)}`)) {
+  if (!confirm(`🔄 Переродиться?\n\nТы потеряешь все монеты и улучшения, но получишь +25% к доходу навсегда!\n\nТекущий множитель: x${getRebirthMultiplier().toFixed(1)}\nНовый множитель: x${(getRebirthMultiplier() + 0.25).toFixed(1)}`)) {
     return;
   }
 
@@ -3835,7 +3835,7 @@ function renderStats() {
       <button class="rebirth-btn ${canRebirth ? 'can-rebirth' : 'cant-rebirth'}" onclick="performRebirth()">
         ${canRebirth ? `🌟 Переродиться (${formatNum(rebirthCost)} монет)` : `🔒 Нужно ${formatNum(rebirthCost)} монет`}
       </button>
-      <div class="rebirth-info">При перерождении ты потеряешь все монеты и улучшения, но получишь +10% к доходу навсегда!</div>
+      <div class="rebirth-info">При перерождении ты потеряешь все монеты и улучшения, но получишь +25% к доходу навсегда!</div>
     </div>`;
 }
 
@@ -4493,7 +4493,11 @@ function closeTetrisReward() {
 
 // Сохранение результата тетриса
 async function saveTetrisScore(score) {
-  if (!tgUser || !score) return;
+  if (!score) return;
+
+  const userId = tgUser ? tgUser.id : (state.userId || 'browser_user');
+  const username = tgUser ? (tgUser.username || tgUser.first_name || 'Игрок') : (state.username || 'Игрок');
+
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/tetris_scores`, {
       method: 'POST',
@@ -4504,8 +4508,8 @@ async function saveTetrisScore(score) {
         'Prefer': 'resolution=merge-duplicates'
       },
       body: JSON.stringify({
-        user_id: tgUser.id,
-        username: tgUser.username || tgUser.first_name || 'Игрок',
+        user_id: userId,
+        username: username,
         score: score,
         played_at: new Date().toISOString()
       })
@@ -4528,12 +4532,14 @@ async function openTetrisLeaderboard() {
     const data = await res.json();
     const medals = ['🥇','🥈','🥉'];
 
+    const currentUserId = tgUser ? tgUser.id : (state.userId || 'browser_user');
+
     if (!data || data.length === 0) {
       el.innerHTML = '<div class="lb-loading">Пока никого нет. Будь первым! 🚀</div>';
     } else {
       let html = '';
       data.forEach((row, i) => {
-        const isMe = tgUser && row.user_id == tgUser.id;
+        const isMe = row.user_id == currentUserId;
         const cls = [i===0?'top1':i===1?'top2':i===2?'top3':'', isMe?'me':''].join(' ');
         html += `<div class="lb-card ${cls}">
           <div class="lb-rank">${i < 3 ? medals[i] : '#'+(i+1)}</div>
@@ -4544,6 +4550,7 @@ async function openTetrisLeaderboard() {
       el.innerHTML = html;
     }
   } catch(e) {
+    console.error('Tetris leaderboard error:', e);
     el.innerHTML = '<div class="lb-loading">❌ Ошибка загрузки</div>';
   }
 }
