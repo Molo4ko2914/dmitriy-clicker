@@ -1226,6 +1226,40 @@
     transform: rotate(180deg);
   }
 
+  /* ROULETTE BUTTON */
+  .roulette-event-btn {
+    display: none;
+    position: fixed; right: 0; top: 392px;
+    z-index: 500; cursor: pointer;
+    flex-direction: column; align-items: center;
+    background: linear-gradient(180deg, #1a0a00, #0a0000);
+    border: 2px solid #ff6b3544;
+    border-right: none;
+    border-radius: 14px 0 0 14px;
+    padding: 10px 8px; gap: 6px;
+    box-shadow: -4px 0 24px #ff6b3533;
+    transition: transform 0.2s, background 0.2s;
+    animation: rouletteGlow 1.5s ease-in-out infinite;
+  }
+  .roulette-event-btn.visible { display: flex; }
+  .roulette-event-btn:active { transform: scale(0.95); }
+  @keyframes rouletteGlow {
+    0%,100% { box-shadow: -4px 0 24px #ff6b3533; }
+    50%      { box-shadow: -4px 0 40px #ff6b3599; }
+  }
+  .roulette-event-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, #330000, #1a0000);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; border: 1px solid #ff6b3544;
+    box-shadow: 0 0 12px #ff6b3544;
+  }
+  .roulette-event-label {
+    font-family: 'Russo One', sans-serif; font-size: 8px; color: #ff6b3588;
+    letter-spacing: 1px; writing-mode: vertical-rl; text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+
   /* COSMO-BATALII BUTTON */
   /* Coming soon game button */
   .coming-soon-btn {
@@ -2075,6 +2109,244 @@
   .tetris-reward-item { background: #0f2a0f; border: 1px solid #39ff1433; border-radius: 10px; padding: 8px 12px; font-size: 13px; color: #fff; }
   .tetris-reward-btn { background: #39ff14; color: #000; border: none; border-radius: 30px; padding: 12px 28px; font-family: 'Russo One', sans-serif; font-size: 13px; cursor: pointer; letter-spacing: 1px; }
 
+  /* ROULETTE OVERLAY */
+  .roulette-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.95);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+    flex-direction: column;
+  }
+  .roulette-overlay.show { opacity: 1; pointer-events: all; }
+  .roulette-modal {
+    background: linear-gradient(160deg, #1a0a00, #0a0000);
+    border: 2px solid #ff6b3544; border-radius: 20px;
+    padding: 20px; width: 90%; max-width: 400px;
+    transform: scale(0.9); transition: transform 0.3s cubic-bezier(.22,.68,0,1.2);
+    box-shadow: 0 0 60px #ff6b3533;
+  }
+  .roulette-overlay.show .roulette-modal { transform: scale(1); }
+  .roulette-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .roulette-title {
+    font-family: 'Russo One', sans-serif; font-size: 20px;
+    color: #ff6b35; letter-spacing: 2px;
+    text-shadow: 0 0 20px #ff6b3588;
+  }
+  .roulette-close-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255, 107, 53, 0.1);
+    border: none; color: #ff6b35;
+    font-size: 18px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .roulette-close-btn:active { transform: scale(0.9); }
+
+  .roulette-balance {
+    text-align: center; margin-bottom: 20px;
+    padding: 12px; background: rgba(255, 107, 53, 0.1);
+    border-radius: 12px; border: 1px solid #ff6b3533;
+  }
+  .roulette-balance-label {
+    font-size: 11px; color: #ff6b3588;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .roulette-balance-value {
+    font-family: 'Russo One', sans-serif;
+    font-size: 24px; color: #ff6b35;
+    margin-top: 4px;
+  }
+
+  .roulette-wheel-container {
+    position: relative;
+    width: 280px; height: 280px;
+    margin: 0 auto 24px;
+  }
+  .roulette-pointer {
+    position: absolute;
+    top: -10px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px; color: #ff6b35;
+    z-index: 10;
+    filter: drop-shadow(0 0 10px #ff6b35);
+  }
+  .roulette-wheel {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 4px solid #ff6b35;
+    position: relative;
+    background: conic-gradient(
+      from 0deg,
+      #330000 0deg 30deg,
+      #1a3300 30deg 60deg,
+      #330000 60deg 90deg,
+      #1a3300 90deg 120deg,
+      #330000 120deg 150deg,
+      #1a3300 150deg 180deg,
+      #330000 180deg 210deg,
+      #331a00 210deg 240deg,
+      #330000 240deg 270deg,
+      #1a3300 270deg 300deg,
+      #330000 300deg 330deg,
+      #331a00 330deg 360deg
+    );
+    box-shadow: 0 0 40px #ff6b3544, inset 0 0 40px #00000088;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .roulette-wheel.spinning {
+    transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  }
+  .roulette-segment {
+    position: absolute;
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Russo One', sans-serif;
+    font-size: 16px; font-weight: 700;
+    pointer-events: none;
+  }
+  .roulette-segment:nth-child(1) { transform: rotate(15deg); color: #ff6b35; }
+  .roulette-segment:nth-child(2) { transform: rotate(45deg); color: #39ff14; }
+  .roulette-segment:nth-child(3) { transform: rotate(75deg); color: #ff6b35; }
+  .roulette-segment:nth-child(4) { transform: rotate(105deg); color: #39ff14; }
+  .roulette-segment:nth-child(5) { transform: rotate(135deg); color: #ff6b35; }
+  .roulette-segment:nth-child(6) { transform: rotate(165deg); color: #39ff14; }
+  .roulette-segment:nth-child(7) { transform: rotate(195deg); color: #ff6b35; }
+  .roulette-segment:nth-child(8) { transform: rotate(225deg); color: #ffd700; }
+  .roulette-segment:nth-child(9) { transform: rotate(255deg); color: #ff6b35; }
+  .roulette-segment:nth-child(10) { transform: rotate(285deg); color: #39ff14; }
+  .roulette-segment:nth-child(11) { transform: rotate(315deg); color: #ff6b35; }
+  .roulette-segment:nth-child(12) { transform: rotate(345deg); color: #ffd700; }
+  .roulette-segment span {
+    display: block;
+    transform: translateY(-100px);
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .roulette-bet-section {
+    margin-bottom: 20px;
+  }
+  .roulette-bet-label {
+    font-size: 13px; color: #ff6b3588;
+    text-align: center; margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .roulette-bet-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .roulette-bet-btn {
+    padding: 10px;
+    background: rgba(255, 107, 53, 0.1);
+    border: 1px solid #ff6b3533;
+    border-radius: 10px;
+    color: #ff6b35;
+    font-family: 'Russo One', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .roulette-bet-btn:active { transform: scale(0.95); }
+  .roulette-bet-btn.selected {
+    background: rgba(255, 107, 53, 0.3);
+    border-color: #ff6b35;
+    box-shadow: 0 0 20px #ff6b3544;
+  }
+  .roulette-current-bet {
+    text-align: center;
+    font-size: 14px;
+    color: #ff6b3588;
+  }
+  .roulette-current-bet span {
+    color: #ff6b35;
+    font-family: 'Russo One', sans-serif;
+    font-size: 16px;
+  }
+
+  .roulette-duration-section {
+    margin-bottom: 20px;
+  }
+  .roulette-duration-label {
+    font-size: 13px; color: #ff6b3588;
+    text-align: center; margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .roulette-duration-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .roulette-duration-btn {
+    padding: 10px;
+    background: rgba(255, 107, 53, 0.1);
+    border: 1px solid #ff6b3533;
+    border-radius: 10px;
+    color: #ff6b35;
+    font-family: 'Russo One', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .roulette-duration-btn:active { transform: scale(0.95); }
+  .roulette-duration-btn.selected {
+    background: rgba(255, 107, 53, 0.3);
+    border-color: #ff6b35;
+    box-shadow: 0 0 20px #ff6b3544;
+  }
+
+  .roulette-spin-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    border: none;
+    border-radius: 12px;
+    color: #000;
+    font-family: 'Russo One', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    box-shadow: 0 4px 20px #ff6b3544;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+  .roulette-spin-btn:active { transform: translateY(2px); }
+  .roulette-spin-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .roulette-info {
+    background: rgba(255, 107, 53, 0.05);
+    border: 1px solid #ff6b3522;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .roulette-info-title {
+    font-size: 12px;
+    color: #ff6b35;
+    text-align: center;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .roulette-info-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .roulette-info-item {
+    font-size: 11px;
+    color: #ff6b3588;
+    text-align: center;
+  }
+
   /* EVENT BUTTON */
   .event-btn {
     display: none !important;
@@ -2532,6 +2804,12 @@
   <div class="tetris-event-label">ТЕТРИС</div>
 </div>
 
+<!-- ROULETTE EVENT BUTTON -->
+<div class="roulette-event-btn visible" id="roulette-event-btn" onclick="openRoulette()">
+  <div class="roulette-event-icon">🎯</div>
+  <div class="roulette-event-label">РУЛЕТКА</div>
+</div>
+
 <!-- TETRIS OVERLAY -->
 <div class="tetris-overlay" id="tetris-overlay">
   <div class="tetris-modal">
@@ -2592,6 +2870,75 @@
       <div class="lb-loading">⏳ Загрузка...</div>
     </div>
     <button class="tetris-reward-btn" onclick="document.getElementById('tetris-leaderboard-overlay').classList.remove('show')">ЗАКРЫТЬ</button>
+  </div>
+</div>
+
+<!-- ROULETTE OVERLAY -->
+<div class="roulette-overlay" id="roulette-overlay">
+  <div class="roulette-modal">
+    <div class="roulette-header">
+      <div class="roulette-title">🎯 РУЛЕТКА</div>
+      <button class="roulette-close-btn" onclick="closeRoulette()">✕</button>
+    </div>
+
+    <div class="roulette-balance">
+      <div class="roulette-balance-label">Твой баланс:</div>
+      <div class="roulette-balance-value" id="roulette-balance">0</div>
+    </div>
+
+    <div class="roulette-wheel-container">
+      <div class="roulette-pointer">▼</div>
+      <div class="roulette-wheel" id="roulette-wheel">
+        <div class="roulette-segment" data-multiplier="0"><span>💀</span></div>
+        <div class="roulette-segment" data-multiplier="1.5"><span>x1.5</span></div>
+        <div class="roulette-segment" data-multiplier="0"><span>💀</span></div>
+        <div class="roulette-segment" data-multiplier="2"><span>x2</span></div>
+        <div class="roulette-segment" data-multiplier="0"><span>💀</span></div>
+        <div class="roulette-segment" data-multiplier="1.5"><span>x1.5</span></div>
+        <div class="roulette-segment" data-multiplier="0"><span>💀</span></div>
+        <div class="roulette-segment" data-multiplier="5"><span>x5</span></div>
+        <div class="roulette-segment" data-multiplier="0"><span>💀</span></div>
+        <div class="roulette-segment" data-multiplier="2"><span>x2</span></div>
+        <div class="roulette-segment" data-multiplier="0"><span>💀</span></div>
+        <div class="roulette-segment" data-multiplier="10"><span>x10</span></div>
+      </div>
+    </div>
+
+    <div class="roulette-bet-section">
+      <div class="roulette-bet-label">Выбери ставку:</div>
+      <div class="roulette-bet-buttons">
+        <button class="roulette-bet-btn" onclick="selectBet(1000)">1K</button>
+        <button class="roulette-bet-btn" onclick="selectBet(5000)">5K</button>
+        <button class="roulette-bet-btn" onclick="selectBet(10000)">10K</button>
+        <button class="roulette-bet-btn" onclick="selectBet(50000)">50K</button>
+        <button class="roulette-bet-btn" onclick="selectBet(100000)">100K</button>
+        <button class="roulette-bet-btn" onclick="selectBet(500000)">500K</button>
+      </div>
+      <div class="roulette-current-bet">Ставка: <span id="roulette-current-bet">0</span></div>
+    </div>
+
+    <div class="roulette-duration-section">
+      <div class="roulette-duration-label">Длительность вращения:</div>
+      <div class="roulette-duration-buttons">
+        <button class="roulette-duration-btn" onclick="selectDuration(5)">⚡ 5с</button>
+        <button class="roulette-duration-btn" onclick="selectDuration(15)">15с</button>
+        <button class="roulette-duration-btn selected" onclick="selectDuration(30)">30с</button>
+        <button class="roulette-duration-btn" onclick="selectDuration(60)">60с</button>
+      </div>
+    </div>
+
+    <button class="roulette-spin-btn" id="roulette-spin-btn" onclick="spinRoulette()">🎯 КРУТИТЬ</button>
+
+    <div class="roulette-info">
+      <div class="roulette-info-title">Шансы выигрыша:</div>
+      <div class="roulette-info-items">
+        <div class="roulette-info-item">💀 Проигрыш — 50%</div>
+        <div class="roulette-info-item">x1.5 — 16.7%</div>
+        <div class="roulette-info-item">x2 — 16.7%</div>
+        <div class="roulette-info-item">x5 — 8.3%</div>
+        <div class="roulette-info-item">x10 — 8.3%</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -4558,6 +4905,161 @@ async function openTetrisLeaderboard() {
 // Init tetris board on load
 tBoard = Array.from({length: T_ROWS}, () => Array(T_COLS).fill(0));
 tScore = 0; tLevel = 1; tLines = 0; tTotalLines = 0;
+
+// ===== ROULETTE =====
+let rouletteCurrentBet = 0;
+let rouletteSpinning = false;
+let rouletteSpinDuration = 30; // По умолчанию 30 секунд
+
+const ROULETTE_SEGMENTS = [
+  { multiplier: 0, label: '💀' },
+  { multiplier: 1.5, label: 'x1.5' },
+  { multiplier: 0, label: '💀' },
+  { multiplier: 2, label: 'x2' },
+  { multiplier: 0, label: '💀' },
+  { multiplier: 1.5, label: 'x1.5' },
+  { multiplier: 0, label: '💀' },
+  { multiplier: 5, label: 'x5' },
+  { multiplier: 0, label: '💀' },
+  { multiplier: 2, label: 'x2' },
+  { multiplier: 0, label: '💀' },
+  { multiplier: 10, label: 'x10' }
+];
+
+function openRoulette() {
+  document.getElementById('roulette-overlay').classList.add('show');
+  updateRouletteBalance();
+}
+
+function closeRoulette() {
+  document.getElementById('roulette-overlay').classList.remove('show');
+  rouletteCurrentBet = 0;
+  updateRouletteBetDisplay();
+}
+
+function updateRouletteBalance() {
+  document.getElementById('roulette-balance').textContent = formatNum(state.coins);
+}
+
+function selectBet(amount) {
+  if (rouletteSpinning) return;
+
+  if (state.coins < amount) {
+    showToast('❌ Недостаточно монет!');
+    return;
+  }
+
+  rouletteCurrentBet = amount;
+  updateRouletteBetDisplay();
+
+  // Подсветка выбранной кнопки
+  document.querySelectorAll('.roulette-bet-btn').forEach(btn => {
+    btn.classList.remove('selected');
+  });
+  event.target.classList.add('selected');
+}
+
+function updateRouletteBetDisplay() {
+  document.getElementById('roulette-current-bet').textContent = formatNum(rouletteCurrentBet);
+}
+
+function selectDuration(seconds) {
+  if (rouletteSpinning) return;
+
+  rouletteSpinDuration = seconds;
+
+  // Подсветка выбранной кнопки
+  document.querySelectorAll('.roulette-duration-btn').forEach(btn => {
+    btn.classList.remove('selected');
+  });
+  event.target.classList.add('selected');
+}
+
+function spinRoulette() {
+  if (rouletteSpinning) return;
+
+  if (rouletteCurrentBet === 0) {
+    showToast('❌ Выбери ставку!');
+    return;
+  }
+
+  if (state.coins < rouletteCurrentBet) {
+    showToast('❌ Недостаточно монет!');
+    return;
+  }
+
+  // Снимаем ставку
+  state.coins -= rouletteCurrentBet;
+  updateRouletteBalance();
+  updateUI();
+  save();
+
+  rouletteSpinning = true;
+  document.getElementById('roulette-spin-btn').disabled = true;
+
+  const wheel = document.getElementById('roulette-wheel');
+
+  // Случайный сегмент
+  const randomIndex = Math.floor(Math.random() * ROULETTE_SEGMENTS.length);
+  const segmentAngle = 360 / ROULETTE_SEGMENTS.length;
+
+  // Стрелка указывает вверх (270 градусов), нужно скорректировать
+  // Вращаем на 5-7 полных оборотов + угол чтобы нужный сегмент оказался под стрелкой
+  const fullRotations = 5 + Math.random() * 2;
+  const targetAngle = fullRotations * 360 + (randomIndex * segmentAngle) + 90; // +90 чтобы компенсировать позицию стрелки
+
+  console.log('Spinning to:', targetAngle, 'degrees, segment:', randomIndex, 'result:', ROULETTE_SEGMENTS[randomIndex], 'duration:', rouletteSpinDuration);
+
+  // Устанавливаем transition с выбранной длительностью
+  wheel.style.transition = `transform ${rouletteSpinDuration}s cubic-bezier(0.17, 0.67, 0.12, 0.99)`;
+
+  setTimeout(() => {
+    wheel.style.transform = `rotate(${targetAngle}deg)`;
+  }, 50);
+
+  // Результат через выбранную длительность
+  setTimeout(() => {
+    const result = ROULETTE_SEGMENTS[randomIndex];
+    showRouletteResult(result);
+
+    // Сброс
+    setTimeout(() => {
+      wheel.style.transition = 'none';
+      wheel.style.transform = 'rotate(0deg)';
+      rouletteSpinning = false;
+      document.getElementById('roulette-spin-btn').disabled = false;
+
+      // Сброс выбора ставки
+      rouletteCurrentBet = 0;
+      updateRouletteBetDisplay();
+      document.querySelectorAll('.roulette-bet-btn').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+    }, 2000);
+  }, rouletteSpinDuration * 1000);
+}
+
+function showRouletteResult(result) {
+  if (result.multiplier === 0) {
+    // Проигрыш
+    showToast(`💀 Проигрыш! Потеряно ${formatNum(rouletteCurrentBet)} монет`);
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+      window.Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+    }
+  } else {
+    // Выигрыш
+    const winAmount = Math.floor(rouletteCurrentBet * result.multiplier);
+    state.coins += winAmount;
+    updateRouletteBalance();
+    updateUI();
+    save();
+
+    showToast(`🎉 Выигрыш ${result.label}! Получено ${formatNum(winAmount)} монет!`);
+    if (window.Telegram?.WebApp?.HapticFeedback) {
+      window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+    }
+  }
+}
 
 // ===== COSMO-BATALII (AIR HOCKEY) =====
 const COSMO_W = 310, COSMO_H = 420;
